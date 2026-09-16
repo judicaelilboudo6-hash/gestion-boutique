@@ -23,7 +23,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.453.0/lucide.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -49,40 +48,22 @@ const {
   CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } = Recharts;
 
-// Fabrique d'icones a partir du paquet lucide (UMD)
-const ICON_NAMES = ["Store", "Plus", "Trash2", "ArrowDownCircle", "ArrowUpCircle", "LogOut", "LayoutGrid", "Package", "Repeat", "Receipt", "AlertCircle", "ChevronRight", "Search", "Pencil", "Zap", "X", "Download", "Trophy", "TrendingUp", "ShoppingCart", "Minus", "Check", "Printer", "Truck", "MessageCircle", "ArrowLeft"];
-function toKebab(n) { return n.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase(); }
-function lookupIconRaw(name) {
-  const lib = (window.lucide && window.lucide.icons) || window.lucide || {};
-  const camel = name.charAt(0).toLowerCase() + name.slice(1);
-  return lib[name] || lib[toKebab(name)] || lib[camel] || null;
-}
+// Icones integrees directement (aucune dependance externe)
+const ICON_SVGS = {"Store": "<path d=\"M3 9h18l-1.5-5h-15L3 9z\"/><path d=\"M3 9v11h18V9\"/><path d=\"M9 20v-6h6v6\"/>", "Plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "Trash2": "<path d=\"M3 6h18\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"/><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"/>", "ArrowDownCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"8 12 12 16 16 12\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"/>", "ArrowUpCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"16 12 12 8 8 12\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"/>", "LogOut": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/>", "LayoutGrid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "Package": "<path d=\"M16.5 9.4 7.5 4.21\"/><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"/><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"/><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"/>", "Repeat": "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>", "Receipt": "<path d=\"M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2z\"/><line x1=\"8\" y1=\"7\" x2=\"16\" y2=\"7\"/><line x1=\"8\" y1=\"11\" x2=\"16\" y2=\"11\"/>", "AlertCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"/>", "ChevronRight": "<polyline points=\"9 18 15 12 9 6\"/>", "Search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/>", "Pencil": "<path d=\"M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z\"/>", "Zap": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>", "X": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/>", "Download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/>", "Trophy": "<path d=\"M8 21h8\"/><path d=\"M12 17v4\"/><path d=\"M7 4h10v5a5 5 0 0 1-10 0z\"/><path d=\"M17 4h3a2 2 0 0 1-2 4h-1\"/><path d=\"M7 4H4a2 2 0 0 0 2 4h1\"/>", "TrendingUp": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>", "ShoppingCart": "<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>", "Minus": "<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>", "Check": "<polyline points=\"20 6 9 17 4 12\"/>", "Printer": "<polyline points=\"6 9 6 2 18 2 18 9\"/><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"/>", "Truck": "<path d=\"M10 17h4V5H2v12h3\"/><path d=\"M14 9h4l3 3v5h-2\"/><circle cx=\"7.5\" cy=\"17.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"17.5\" r=\"1.5\"/>", "MessageCircle": "<path d=\"M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.94 8.94 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9z\"/>", "ArrowLeft": "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>", "Menu": "<line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/>"};
 function makeIcon(name) {
   return function Icon(props) {
     const size = props.size || 24;
-    const raw = lookupIconRaw(name);
-    const base = {
+    return React.createElement("svg", {
       xmlns: "http://www.w3.org/2000/svg", width: size, height: size,
       viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
       strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round",
-      style: props.style, className: props.className
-    };
-    if (!raw || !Array.isArray(raw)) return React.createElement("svg", base);
-    // Deux formats possibles selon la version de lucide :
-    // soit une liste d'enfants [[tag, attrs], ...], soit [tag, attrs, enfants]
-    let kids = raw;
-    if (raw.length === 3 && typeof raw[0] === "string" && Array.isArray(raw[2])) {
-      kids = raw[2];
-    }
-    const children = kids.map(function (c, i) {
-      if (!Array.isArray(c)) return null;
-      return React.createElement(c[0], Object.assign({ key: i }, c[1]));
-    }).filter(Boolean);
-    return React.createElement("svg", base, children);
+      style: props.style, className: props.className,
+      dangerouslySetInnerHTML: { __html: ICON_SVGS[name] || "" }
+    });
   };
 }
 const __I = {};
-ICON_NAMES.forEach(function (n) { __I[n] = makeIcon(n); });
+Object.keys(ICON_SVGS).forEach(function (n) { __I[n] = makeIcon(n); });
 
 const Store = __I["Store"];
 const Plus = __I["Plus"];
@@ -110,6 +91,7 @@ const Printer = __I["Printer"];
 const Truck = __I["Truck"];
 const MessageCircle = __I["MessageCircle"];
 const ArrowLeft = __I["ArrowLeft"];
+const Menu = __I["Menu"];
 
 // ---------- Palette ----------
 const NAVY = "#101B2E";
@@ -331,6 +313,7 @@ function LoginScreen({ onEnter }) {
 function ShopApp({ boutique, onLogout }) {
   const ns = (k) => `b_${boutique.id}_${k}`;
   const [tab, setTab] = useState("dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -447,8 +430,22 @@ function ShopApp({ boutique, onLogout }) {
 
   return (
     <div style={{ background: PAPER, minHeight: "100%", color: TEXT }} className="flex flex-col md:flex-row">
-      {/* Barre latérale */}
-      <div style={{ background: NAVY, color: "#CBD2DE" }} className="md:w-60 w-full flex md:flex-col md:min-h-full">
+      {/* Barre du haut, mobile uniquement */}
+      <div className="flex md:hidden items-center justify-between px-4 py-3" style={{ background: NAVY }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <div style={{ background: NAVY_SOFT }} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Store size={16} style={{ color: ORANGE }} />
+          </div>
+          <p className="text-sm font-semibold text-white truncate">{boutique.name}</p>
+        </div>
+        <button onClick={() => setMobileMenuOpen(true)} aria-label="Ouvrir le menu"
+          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: NAVY_SOFT }}>
+          <Menu size={19} color="#fff" />
+        </button>
+      </div>
+
+      {/* Barre latérale, desktop uniquement */}
+      <div style={{ background: NAVY, color: "#CBD2DE" }} className="hidden md:flex md:w-60 flex-col md:min-h-full">
         <div className="flex-1 p-4">
           <div className="flex items-center gap-2 mb-8 px-1">
             <div style={{ background: NAVY_SOFT }} className="w-8 h-8 rounded-lg flex items-center justify-center">
@@ -459,7 +456,7 @@ function ShopApp({ boutique, onLogout }) {
               <p className="text-[11px]" style={{ color: "#8590A3" }}>Gestion boutique</p>
             </div>
           </div>
-          <nav className="flex md:flex-col gap-1">
+          <nav className="flex flex-col gap-1">
             {NAV.map((n) => {
               const Icon = n.icon;
               const active = tab === n.id;
@@ -467,7 +464,7 @@ function ShopApp({ boutique, onLogout }) {
                 <button key={n.id} onClick={() => setTab(n.id)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-colors"
                   style={{ background: active ? ORANGE : "transparent", color: active ? "#fff" : "#CBD2DE", fontWeight: active ? 600 : 400 }}>
-                  <Icon size={17} /> <span className="hidden sm:inline">{n.label}</span>
+                  <Icon size={17} /> <span>{n.label}</span>
                 </button>
               );
             })}
@@ -475,13 +472,56 @@ function ShopApp({ boutique, onLogout }) {
         </div>
         <div className="p-4 space-y-1">
           <button onClick={() => exportToExcel(boutique, products, movements, expenses)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full" style={{ color: "#CBD2DE" }}>
-            <Download size={17} /> <span className="hidden sm:inline">Exporter (Excel)</span>
+            <Download size={17} /> <span>Exporter (Excel)</span>
           </button>
           <button onClick={onLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full" style={{ color: "#8590A3" }}>
-            <LogOut size={17} /> <span className="hidden sm:inline">Changer de boutique</span>
+            <LogOut size={17} /> <span>Changer de boutique</span>
           </button>
         </div>
       </div>
+
+      {/* Menu tiroir, mobile uniquement */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0" style={{ background: "rgba(16,27,46,0.5)" }} onClick={() => setMobileMenuOpen(false)} />
+          <div style={{ background: NAVY, color: "#CBD2DE" }} className="absolute left-0 top-0 bottom-0 w-72 max-w-[85%] flex flex-col">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <div style={{ background: NAVY_SOFT }} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Store size={16} style={{ color: ORANGE }} />
+                </div>
+                <p className="text-sm font-semibold text-white truncate">{boutique.name}</p>
+              </div>
+              <button onClick={() => setMobileMenuOpen(false)} aria-label="Fermer le menu"
+                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: NAVY_SOFT }}>
+                <X size={18} color="#fff" />
+              </button>
+            </div>
+            <nav className="flex-1 px-4 space-y-1 overflow-auto">
+              {NAV.map((n) => {
+                const Icon = n.icon;
+                const active = tab === n.id;
+                return (
+                  <button key={n.id} onClick={() => { setTab(n.id); setMobileMenuOpen(false); }}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-left w-full transition-colors"
+                    style={{ background: active ? ORANGE : "transparent", color: active ? "#fff" : "#CBD2DE", fontWeight: active ? 600 : 400 }}>
+                    <Icon size={18} /> <span>{n.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="p-4 space-y-1" style={{ borderTop: `1px solid ${NAVY_SOFT}` }}>
+              <button onClick={() => { exportToExcel(boutique, products, movements, expenses); setMobileMenuOpen(false); }}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm w-full" style={{ color: "#CBD2DE" }}>
+                <Download size={18} /> <span>Exporter (Excel)</span>
+              </button>
+              <button onClick={onLogout} className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm w-full" style={{ color: "#8590A3" }}>
+                <LogOut size={18} /> <span>Changer de boutique</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenu */}
       <div className="flex-1 p-5 md:p-8 overflow-auto">
