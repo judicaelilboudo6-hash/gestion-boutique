@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101B2E">
+<title>Gestion de boutique</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.453.0/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root { color-scheme: light; }
+  html, body, #root { height: 100%; margin: 0; }
+  body { background: #F5F6F8; -webkit-text-size-adjust: 100%; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  #root > div { min-height: 100%; }
+  table { border-collapse: collapse; }
+  input, select, button { font-family: inherit; font-size: 16px; }
+  @media (min-width: 640px) { input, select, button { font-size: inherit; } }
+  #boot { display: flex; align-items: center; justify-content: center; height: 100%; color: #6B7280; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="root"><div id="boot">Chargement de l'application…</div></div>
+<script type="text/babel" data-presets="react">
+
+const { useState, useEffect, useMemo, useCallback } = React;
+const {
+  LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} = Recharts;
+
+// Fabrique d'icones a partir du paquet lucide (UMD)
+const ICON_NAMES = ["Store", "Plus", "Trash2", "ArrowDownCircle", "ArrowUpCircle", "LogOut", "LayoutGrid", "Package", "Repeat", "Receipt", "AlertCircle", "ChevronRight", "Search", "Pencil", "Zap", "X", "Download", "Trophy", "TrendingUp", "ShoppingCart", "Minus", "Check", "Printer", "Truck", "MessageCircle", "ArrowLeft"];
+function toKebab(n) { return n.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase(); }
+function lookupIcon(name) {
+  const lib = (window.lucide && (window.lucide.icons || window.lucide)) || {};
+  return lib[name] || lib[toKebab(name)] || null;
+}
+function makeIcon(name) {
+  return function Icon(props) {
+    const size = props.size || 24;
+    const node = lookupIcon(name);
+    const base = {
+      xmlns: "http://www.w3.org/2000/svg", width: size, height: size,
+      viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
+      strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round",
+      style: props.style, className: props.className
+    };
+    if (!node) return React.createElement("svg", base);
+    const children = (Array.isArray(node) ? node : (node[2] || [])).map(function (c, i) {
+      if (!Array.isArray(c)) return null;
+      return React.createElement(c[0], Object.assign({ key: i }, c[1]));
+    });
+    return React.createElement("svg", base, children);
+  };
+}
+const __I = {};
+ICON_NAMES.forEach(function (n) { __I[n] = makeIcon(n); });
+
+const Store = __I["Store"];
+const Plus = __I["Plus"];
+const Trash2 = __I["Trash2"];
+const ArrowDownCircle = __I["ArrowDownCircle"];
+const ArrowUpCircle = __I["ArrowUpCircle"];
+const LogOut = __I["LogOut"];
+const LayoutGrid = __I["LayoutGrid"];
+const Package = __I["Package"];
+const Repeat = __I["Repeat"];
+const Receipt = __I["Receipt"];
+const AlertCircle = __I["AlertCircle"];
+const ChevronRight = __I["ChevronRight"];
+const Search = __I["Search"];
+const Pencil = __I["Pencil"];
+const Zap = __I["Zap"];
+const X = __I["X"];
+const Download = __I["Download"];
+const Trophy = __I["Trophy"];
+const TrendingUp = __I["TrendingUp"];
+const ShoppingCart = __I["ShoppingCart"];
+const Minus = __I["Minus"];
+const Check = __I["Check"];
+const Printer = __I["Printer"];
+const Truck = __I["Truck"];
+const MessageCircle = __I["MessageCircle"];
+const ArrowLeft = __I["ArrowLeft"];
+
+// ---------- Palette ----------
+const NAVY = "#101B2E";
+const NAVY_SOFT = "#1B2A44";
+const ORANGE = "#F5811F";
+const PAPER = "#F5F6F8";
+const CARD = "#FFFFFF";
+const TEXT = "#1F2A38";
+const MUTED = "#6B7280";
+const GREEN = "#2F8F5B";
+const RED = "#D64545";
+const LINE = "#E6E8EC";
+const CAT_COLORS = ["#F5811F", "#101B2E", "#2F8F5B", "#8590A3", "#D64545", "#C99A4B", "#4B5666", "#7C9BB5"];
+
+// ---------- Utilitaires ----------
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const monthStr = () => todayStr().slice(0, 7);
+const fmt = (n) =>
+  (Number(n) || 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " FCFA";
+const simpleHash = (s) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+};
+
+function exportToExcel(boutique, products, movements, expenses) {
+  const wb = XLSX.utils.book_new();
+
+  const wsProducts = XLSX.utils.json_to_sheet(products.map((p) => ({
+    Nom: p.name,
+    Catégorie: p.category || "",
+    "Prix d'achat (FCFA)": p.achat,
+    "Prix de vente (FCFA)": p.vente,
+    "Stock actuel": p.stock,
+    "Valeur du stock (FCFA)": p.stock * p.achat,
+  })));
+  XLSX.utils.book_append_sheet(wb, wsProducts, "Produits");
+
+  const ventes = movements.filter((m) => m.type === "vente");
+  const wsVentes = XLSX.utils.json_to_sheet(ventes.map((m) => ({
+    Date: m.date,
+    Produit: m.productName,
+    Quantité: m.qty,
+    "Prix unitaire (FCFA)": m.unitVente,
+    "Total encaissé (FCFA)": m.totalVente,
+  })));
+  XLSX.utils.book_append_sheet(wb, wsVentes, "Ventes");
+
+  const entrees = movements.filter((m) => m.type === "entree");
+  const wsEntrees = XLSX.utils.json_to_sheet(entrees.map((m) => ({
+    Date: m.date,
+    Produit: m.productName,
+    Quantité: m.qty,
+    "Prix unitaire payé (FCFA)": m.unitAchat,
+    "Coût total (FCFA)": m.totalAchat,
+  })));
+  XLSX.utils.book_append_sheet(wb, wsEntrees, "Entrées");
+
+  const wsExpenses = XLSX.utils.json_to_sheet(expenses.map((e) => ({
+    Date: e.date,
+    Libellé: e.label,
+    "Montant (FCFA)": e.amount,
+  })));
+  XLSX.utils.book_append_sheet(wb, wsExpenses, "Dépenses");
+
+  const depensesTotal = expenses.reduce((a, d) => a + d.amount, 0);
+  const caisseBrute = ventes.reduce((a, v) => a + v.totalVente, 0);
+  const coutReassortTotal = entrees.reduce((a, e) => a + (e.totalAchat || 0), 0);
+  const wsResume = XLSX.utils.json_to_sheet([
+    { Indicateur: "Valeur du stock restant (FCFA)", Valeur: products.reduce((a, p) => a + p.stock * p.achat, 0) },
+    { Indicateur: "Caisse — total encaissé, brut (FCFA)", Valeur: caisseBrute },
+    { Indicateur: "Total des dépenses (FCFA)", Valeur: depensesTotal },
+    { Indicateur: "Total dépensé en réassorts (FCFA)", Valeur: coutReassortTotal },
+    { Indicateur: "Caisse — disponible, net (FCFA)", Valeur: caisseBrute - depensesTotal - coutReassortTotal },
+  ]);
+  XLSX.utils.book_append_sheet(wb, wsResume, "Résumé");
+
+  const safeName = boutique.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+  XLSX.writeFile(wb, `${safeName}-export-${todayStr()}.xlsx`);
+}
+
+async function storeGet(key) {
+  try {
+    const raw = window.localStorage.getItem("gb_" + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+async function storeSet(key, value) {
+  try {
+    window.localStorage.setItem("gb_" + key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ---------- Écran de connexion / choix de boutique ----------
+function LoginScreen({ onEnter }) {
+  const [boutiques, setBoutiques] = useState(null);
+  const [mode, setMode] = useState("list");
+  const [selected, setSelected] = useState(null);
+  const [name, setName] = useState("");
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const list = (await storeGet("boutiques_list")) || [];
+      setBoutiques(list);
+    })();
+  }, []);
+
+  const createBoutique = async () => {
+    if (!name.trim()) return setError("Donne un nom à ta boutique.");
+    const list = boutiques || [];
+    if (list.some((b) => b.name.toLowerCase() === name.trim().toLowerCase())) {
+      return setError("Ce nom de boutique existe déjà.");
+    }
+    const entry = { id: uid(), name: name.trim(), pinHash: pin ? simpleHash(pin) : null };
+    const newList = [...list, entry];
+    await storeSet("boutiques_list", newList);
+    setBoutiques(newList);
+    onEnter(entry);
+  };
+
+  const openBoutique = (b) => {
+    setSelected(b);
+    setError("");
+    if (b.pinHash) setMode("pin");
+    else onEnter(b);
+  };
+
+  const checkPin = () => {
+    if (simpleHash(pin) === selected.pinHash) onEnter(selected);
+    else setError("Code incorrect.");
+  };
+
+  if (boutiques === null) {
+    return (
+      <div style={{ background: PAPER, minHeight: "100%" }} className="flex items-center justify-center p-10 text-sm">
+        <span style={{ color: TEXT }}>Chargement…</span>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: PAPER, minHeight: "100%", color: TEXT }} className="flex items-center justify-center p-6">
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="w-full max-w-sm rounded-xl p-8">
+        <div className="flex items-center gap-2 mb-6">
+          <div style={{ background: NAVY }} className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <Store size={16} style={{ color: ORANGE }} />
+          </div>
+          <h1 className="text-lg font-semibold">Registre de boutique</h1>
+        </div>
+
+        {mode === "list" && (
+          <div className="space-y-4">
+            {boutiques.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-wide" style={{ color: MUTED }}>Boutiques existantes</p>
+                {boutiques.map((b) => (
+                  <button key={b.id} onClick={() => openBoutique(b)} style={{ border: `1px solid ${LINE}` }}
+                    className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-gray-50">
+                    <span>{b.name}</span>
+                    <ChevronRight size={16} style={{ color: "#9CA3AF" }} />
+                  </button>
+                ))}
+              </div>
+            )}
+            <button onClick={() => { setMode("create"); setError(""); setName(""); setPin(""); }}
+              style={{ background: ORANGE, color: "#fff" }} className="w-full rounded-lg py-2 text-sm font-medium flex items-center justify-center gap-2">
+              <Plus size={16} /> Créer une nouvelle boutique
+            </button>
+          </div>
+        )}
+
+        {mode === "create" && (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Nom de la boutique</label>
+              <input autoFocus value={name} onChange={(e) => setName(e.target.value)} style={{ border: `1px solid ${LINE}` }}
+                className="w-full rounded-lg px-3 py-2 text-sm mt-1" placeholder="Ex : Boutique Aïcha" />
+            </div>
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Code d'accès (optionnel, 4 chiffres)</label>
+              <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} style={{ border: `1px solid ${LINE}` }}
+                className="w-full rounded-lg px-3 py-2 text-sm mt-1" placeholder="1234" />
+            </div>
+            {error && <p className="text-xs flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setMode("list")} className="flex-1 rounded-lg py-2 text-sm" style={{ border: `1px solid ${LINE}` }}>Retour</button>
+              <button onClick={createBoutique} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">Créer</button>
+            </div>
+          </div>
+        )}
+
+        {mode === "pin" && (
+          <div className="space-y-3">
+            <p className="text-sm">Code d'accès pour <strong>{selected.name}</strong></p>
+            <input autoFocus value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} style={{ border: `1px solid ${LINE}` }}
+              className="w-full rounded-lg px-3 py-2 text-sm tracking-widest" placeholder="••••" />
+            {error && <p className="text-xs flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => { setMode("list"); setPin(""); setError(""); }} className="flex-1 rounded-lg py-2 text-sm" style={{ border: `1px solid ${LINE}` }}>Retour</button>
+              <button onClick={checkPin} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">Entrer</button>
+            </div>
+          </div>
+        )}
+        <p className="text-[11px] mt-6" style={{ color: "#9CA3AF" }}>Chaque boutique a ses propres données, séparées des autres.</p>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Application principale ----------
+function ShopApp({ boutique, onLogout }) {
+  const ns = (k) => `b_${boutique.id}_${k}`;
+  const [tab, setTab] = useState("dashboard");
+  const [products, setProducts] = useState([]);
+  const [movements, setMovements] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const [p, m, e, s] = await Promise.all([
+        storeGet(ns("products")), storeGet(ns("movements")), storeGet(ns("expenses")), storeGet(ns("suppliers")),
+      ]);
+      setProducts(p || []); setMovements(m || []); setExpenses(e || []); setSuppliers(s || []);
+      setLoaded(true);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boutique.id]);
+
+  const persistProducts = useCallback(async (list) => { setProducts(list); await storeSet(ns("products"), list); }, [boutique.id]);
+  const persistMovements = useCallback(async (list) => { setMovements(list); await storeSet(ns("movements"), list); }, [boutique.id]);
+  const persistExpenses = useCallback(async (list) => { setExpenses(list); await storeSet(ns("expenses"), list); }, [boutique.id]);
+  const persistSuppliers = useCallback(async (list) => { setSuppliers(list); await storeSet(ns("suppliers"), list); }, [boutique.id]);
+
+  const stats = useMemo(() => {
+    const t = todayStr(), m = monthStr();
+    const ventes = movements.filter((mv) => mv.type === "vente");
+    const sum = (arr, pred, field) => arr.filter(pred).reduce((a, x) => a + x[field], 0);
+    const caJour = sum(ventes, (v) => v.date === t, "totalVente");
+    const caMois = sum(ventes, (v) => v.date.slice(0, 7) === m, "totalVente");
+    const coutJour = sum(ventes, (v) => v.date === t, "totalAchat");
+    const coutMois = sum(ventes, (v) => v.date.slice(0, 7) === m, "totalAchat");
+    const depJour = sum(expenses, (d) => d.date === t, "amount");
+    const depMois = sum(expenses, (d) => d.date.slice(0, 7) === m, "amount");
+
+    // Situation actuelle : valeur du stock restant, et caisse (brute / nette)
+    const entrees = movements.filter((mv) => mv.type === "entree");
+    const valeurStock = products.reduce((a, p) => a + p.stock * p.achat, 0);
+    const caisseBrute = ventes.reduce((a, v) => a + v.totalVente, 0);
+    const depensesTotal = expenses.reduce((a, d) => a + d.amount, 0);
+    const coutReassortTotal = entrees.reduce((a, e) => a + (e.totalAchat || 0), 0);
+    const caisseNette = caisseBrute - depensesTotal - coutReassortTotal;
+
+    // Classement des produits les plus vendus (historique complet)
+    const parProduit = {};
+    ventes.forEach((v) => {
+      if (!parProduit[v.productId]) parProduit[v.productId] = { productId: v.productId, name: v.productName, qty: 0, revenue: 0, cost: 0 };
+      parProduit[v.productId].qty += v.qty;
+      parProduit[v.productId].revenue += v.totalVente;
+      parProduit[v.productId].cost += v.totalAchat;
+    });
+    const topProducts = Object.values(parProduit)
+      .map((p) => ({ ...p, profit: p.revenue - p.cost }))
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5);
+
+    // Produits à réapprovisionner (rappel pour le vendeur)
+    const enRupture = products.filter((p) => p.stock <= 0);
+    const stockBas = products.filter((p) => p.stock > 0 && p.stock <= (p.seuil ?? 5));
+
+    // Dépenses par catégorie
+    const parCategorie = {};
+    expenses.forEach((e) => {
+      const key = e.category && e.category.trim() ? e.category.trim() : "Sans catégorie";
+      parCategorie[key] = (parCategorie[key] || 0) + e.amount;
+    });
+    const depensesParCategorie = Object.entries(parCategorie)
+      .map(([category, total]) => ({ category, total, pct: depensesTotal > 0 ? (total / depensesTotal) * 100 : 0 }))
+      .sort((a, b) => b.total - a.total);
+
+    return {
+      caJour, caMois, depJour, depMois,
+      beneficeJour: caJour - coutJour - depJour,
+      beneficeMois: caMois - coutMois - depMois,
+      valeurStock, caisseBrute, caisseNette, topProducts, enRupture, stockBas, depensesParCategorie,
+    };
+  }, [movements, expenses, products]);
+
+  if (!loaded) {
+    return <div style={{ background: PAPER, minHeight: "100%" }} className="flex items-center justify-center text-sm">Chargement des données…</div>;
+  }
+
+  const NAV = [
+    { id: "dashboard", label: "Tableau de bord", icon: LayoutGrid },
+    { id: "catalog", label: "Produits", icon: Package },
+    { id: "movements", label: "Mouvements", icon: Repeat },
+    { id: "suppliers", label: "Fournisseurs", icon: Truck },
+    { id: "stats", label: "Statistiques", icon: TrendingUp },
+    { id: "expenses", label: "Dépenses", icon: Receipt },
+    { id: "caisse", label: "Mode caisse", icon: ShoppingCart },
+  ];
+
+  const TITLES = {
+    dashboard: "Tableau de bord",
+    catalog: "Gestion des produits",
+    movements: "Entrées et ventes",
+    suppliers: "Fournisseurs",
+    stats: "Statistiques",
+    expenses: "Dépenses",
+    caisse: "Mode caisse",
+  };
+
+  // Le mode caisse occupe tout l'écran, sans la barre latérale
+  if (tab === "caisse") {
+    return (
+      <CaisseMode
+        boutiqueName={boutique.name}
+        products={products}
+        movements={movements}
+        setProducts={persistProducts}
+        setMovements={persistMovements}
+        onExit={() => setTab("dashboard")}
+      />
+    );
+  }
+
+  return (
+    <div style={{ background: PAPER, minHeight: "100%", color: TEXT }} className="flex flex-col md:flex-row">
+      {/* Barre latérale */}
+      <div style={{ background: NAVY, color: "#CBD2DE" }} className="md:w-60 w-full flex md:flex-col md:min-h-full">
+        <div className="flex-1 p-4">
+          <div className="flex items-center gap-2 mb-8 px-1">
+            <div style={{ background: NAVY_SOFT }} className="w-8 h-8 rounded-lg flex items-center justify-center">
+              <Store size={16} style={{ color: ORANGE }} />
+            </div>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-white truncate">{boutique.name}</p>
+              <p className="text-[11px]" style={{ color: "#8590A3" }}>Gestion boutique</p>
+            </div>
+          </div>
+          <nav className="flex md:flex-col gap-1">
+            {NAV.map((n) => {
+              const Icon = n.icon;
+              const active = tab === n.id;
+              return (
+                <button key={n.id} onClick={() => setTab(n.id)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-colors"
+                  style={{ background: active ? ORANGE : "transparent", color: active ? "#fff" : "#CBD2DE", fontWeight: active ? 600 : 400 }}>
+                  <Icon size={17} /> <span className="hidden sm:inline">{n.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+        <div className="p-4 space-y-1">
+          <button onClick={() => exportToExcel(boutique, products, movements, expenses)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full" style={{ color: "#CBD2DE" }}>
+            <Download size={17} /> <span className="hidden sm:inline">Exporter (Excel)</span>
+          </button>
+          <button onClick={onLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full" style={{ color: "#8590A3" }}>
+            <LogOut size={17} /> <span className="hidden sm:inline">Changer de boutique</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Contenu */}
+      <div className="flex-1 p-5 md:p-8 overflow-auto">
+        {tab === "dashboard" && (
+          <Dashboard
+            stats={stats}
+            title={TITLES.dashboard}
+            products={products}
+            movements={movements}
+            setProducts={persistProducts}
+            setMovements={persistMovements}
+            boutiqueName={boutique.name}
+          />
+        )}
+        {tab === "catalog" && (
+          <Catalog
+            products={products}
+            setProducts={persistProducts}
+            movements={movements}
+            setMovements={persistMovements}
+            title={TITLES.catalog}
+            boutiqueName={boutique.name}
+            suppliers={suppliers}
+          />
+        )}
+        {tab === "suppliers" && (
+          <Suppliers suppliers={suppliers} setSuppliers={persistSuppliers} products={products} title={TITLES.suppliers} />
+        )}
+        {tab === "movements" && (
+          <Movements products={products} setProducts={persistProducts} movements={movements} setMovements={persistMovements} title={TITLES.movements} />
+        )}
+        {tab === "stats" && <StatsPage stats={stats} movements={movements} expenses={expenses} title={TITLES.stats} />}
+        {tab === "expenses" && <Expenses expenses={expenses} setExpenses={persistExpenses} title={TITLES.expenses} />}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Mode caisse : vue plein écran simplifiée pour vendre vite ----------
+function CaisseMode({ boutiqueName, products, movements, setProducts, setMovements, onExit }) {
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [cart, setCart] = useState([]); // [{productId, name, price, achat, qty, maxStock}]
+  const [receipt, setReceipt] = useState(null);
+
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
+
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) &&
+    (categoryFilter ? p.category === categoryFilter : true)
+  );
+
+  const cartQty = (productId) => cart.find((l) => l.productId === productId)?.qty || 0;
+
+  const addToCart = (p) => {
+    const already = cartQty(p.id);
+    if (already >= p.stock) return;
+    setCart((c) => {
+      const idx = c.findIndex((l) => l.productId === p.id);
+      if (idx === -1) return [...c, { productId: p.id, name: p.name, price: p.vente, achat: p.achat, qty: 1, maxStock: p.stock }];
+      const copy = [...c];
+      copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
+      return copy;
+    });
+  };
+
+  const changeQty = (productId, delta) => {
+    setCart((c) => c
+      .map((l) => l.productId === productId ? { ...l, qty: Math.min(l.maxStock, Math.max(0, l.qty + delta)) } : l)
+      .filter((l) => l.qty > 0));
+  };
+
+  const removeLine = (productId) => setCart((c) => c.filter((l) => l.productId !== productId));
+
+  const total = cart.reduce((a, l) => a + l.qty * l.price, 0);
+
+  const checkout = () => {
+    if (cart.length === 0) return;
+    const date = todayStr();
+    const newMovements = cart.map((l) => ({
+      id: uid(), type: "vente", productId: l.productId, productName: l.name, qty: l.qty, date,
+      unitVente: l.price, unitAchat: l.achat, totalVente: l.qty * l.price, totalAchat: l.qty * l.achat,
+    }));
+    setMovements([...newMovements, ...movements]);
+    setProducts(products.map((p) => {
+      const line = cart.find((l) => l.productId === p.id);
+      return line ? { ...p, stock: p.stock - line.qty } : p;
+    }));
+    const now = new Date();
+    setReceipt({
+      items: cart.map((l) => ({ name: l.name, qty: l.qty, price: l.price })),
+      total: cart.reduce((a, l) => a + l.qty * l.price, 0),
+      dateLabel: now.toLocaleDateString("fr-FR"),
+      timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    });
+    setCart([]);
+  };
+
+  return (
+    <div style={{ background: PAPER, minHeight: "100%", color: TEXT }} className="flex flex-col h-full">
+      {/* Barre du haut */}
+      <div style={{ background: NAVY }} className="flex items-center justify-between gap-3 px-4 py-3 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div style={{ background: NAVY_SOFT }} className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <ShoppingCart size={16} style={{ color: ORANGE }} />
+          </div>
+          <span className="text-white text-sm font-semibold">Mode caisse</span>
+        </div>
+        <button onClick={onExit} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm" style={{ color: "#CBD2DE" }}>
+          <X size={16} /> Quitter la caisse
+        </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Produits */}
+        <div className="flex-1 p-4 overflow-auto">
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un produit…"
+                style={{ border: `1px solid ${LINE}`, background: CARD }} className="w-full rounded-lg pl-9 pr-3 py-2.5 text-sm" />
+            </div>
+            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+              style={{ border: `1px solid ${LINE}`, background: CARD }} className="rounded-lg px-3 py-2.5 text-sm">
+              <option value="">Toutes les catégories</option>
+              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+            {filtered.map((p) => {
+              const inCart = cartQty(p.id);
+              const disabled = p.stock <= 0 || inCart >= p.stock;
+              return (
+                <button key={p.id} onClick={() => addToCart(p)} disabled={disabled}
+                  style={{ background: CARD, border: `1px solid ${inCart > 0 ? ORANGE : LINE}` }}
+                  className="relative text-left rounded-xl p-3 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform">
+                  {inCart > 0 && (
+                    <span style={{ background: ORANGE, color: "#fff" }} className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold">
+                      {inCart}
+                    </span>
+                  )}
+                  <div style={{ background: PAPER }} className="w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                    <Package size={16} style={{ color: "#9CA3AF" }} />
+                  </div>
+                  <p className="text-sm font-medium leading-snug">{p.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: MUTED }}>{p.stock <= 0 ? "Rupture" : `${p.stock} en stock`}</p>
+                  <p className="text-sm mt-1 font-semibold" style={{ fontFamily: "ui-monospace, monospace", color: ORANGE }}>{fmt(p.vente)}</p>
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="col-span-full text-center text-sm py-10" style={{ color: "#9CA3AF" }}>Aucun produit trouvé.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Panier */}
+        <div style={{ background: CARD, borderTop: `1px solid ${LINE}`, borderColor: LINE }} className="lg:w-80 flex-shrink-0 flex flex-col lg:border-t-0 lg:border-l">
+          <div className="p-4 flex-1 overflow-auto">
+            <p className="text-sm font-semibold mb-3">Panier</p>
+            {cart.length === 0 ? (
+              <p className="text-sm" style={{ color: "#9CA3AF" }}>Touche un produit pour l'ajouter.</p>
+            ) : (
+              <div className="space-y-3">
+                {cart.map((l) => (
+                  <div key={l.productId} className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm truncate">{l.name}</p>
+                      <p className="text-xs" style={{ color: MUTED, fontFamily: "ui-monospace, monospace" }}>{fmt(l.qty * l.price)}</p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={() => changeQty(l.productId, -1)} style={{ border: `1px solid ${LINE}` }} className="w-7 h-7 rounded-md flex items-center justify-center"><Minus size={13} /></button>
+                      <span className="w-5 text-center text-sm" style={{ fontFamily: "ui-monospace, monospace" }}>{l.qty}</span>
+                      <button onClick={() => changeQty(l.productId, 1)} disabled={l.qty >= l.maxStock} style={{ border: `1px solid ${LINE}` }} className="w-7 h-7 rounded-md flex items-center justify-center disabled:opacity-30"><Plus size={13} /></button>
+                      <button onClick={() => removeLine(l.productId)} className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100"><Trash2 size={13} style={{ color: RED }} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4" style={{ borderTop: `1px solid ${LINE}` }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm" style={{ color: MUTED }}>Total</span>
+              <span className="text-xl font-semibold" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(total)}</span>
+            </div>
+            <button onClick={checkout} disabled={cart.length === 0} style={{ background: ORANGE, color: "#fff" }}
+              className="w-full rounded-lg py-3 text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40">
+              Encaisser
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {receipt && (
+        <ReceiptModal
+          boutiqueName={boutiqueName}
+          items={receipt.items}
+          total={receipt.total}
+          dateLabel={receipt.dateLabel}
+          timeLabel={receipt.timeLabel}
+          onClose={() => setReceipt(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---------- En-tête de page commune ----------
+function PageHeader({ title, actionLabel, onAction, secondaryLabel, onSecondary, SecondaryIcon }) {
+  const Icon2 = SecondaryIcon || Zap;
+  return (
+    <div className="flex items-center justify-between mb-6 gap-3">
+      <h2 className="text-2xl font-semibold" style={{ color: TEXT }}>{title}</h2>
+      <div className="flex items-center gap-2">
+        {secondaryLabel && (
+          <button onClick={onSecondary} style={{ background: NAVY, color: "#fff" }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium">
+            <Icon2 size={16} /> {secondaryLabel}
+          </button>
+        )}
+        {actionLabel && (
+          <button onClick={onAction} style={{ background: ORANGE, color: "#fff" }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium">
+            <Plus size={16} /> {actionLabel}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Tableau de bord ----------
+function StatCard({ label, value, accent }) {
+  return (
+    <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-5">
+      <p className="text-xs" style={{ color: MUTED }}>{label}</p>
+      <p className="text-2xl mt-1 font-semibold" style={{ fontFamily: "ui-monospace, monospace", color: accent || TEXT }}>
+        {fmt(value)}
+      </p>
+    </div>
+  );
+}
+
+function Dashboard({ stats, title, products, movements, setProducts, setMovements, boutiqueName }) {
+  const [quickSaleOpen, setQuickSaleOpen] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+
+  const confirmQuickSale = (product, qty, price) => {
+    const mv = {
+      id: uid(), type: "vente", productId: product.id, productName: product.name, qty, date: todayStr(),
+      unitVente: price, unitAchat: product.achat, totalVente: qty * price, totalAchat: qty * product.achat,
+    };
+    setMovements([mv, ...movements]);
+    setProducts(products.map((p) => p.id === product.id ? { ...p, stock: p.stock - qty } : p));
+    const now = new Date();
+    setReceipt({
+      items: [{ name: product.name, qty, price }],
+      total: qty * price,
+      dateLabel: now.toLocaleDateString("fr-FR"),
+      timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    });
+    setQuickSaleOpen(false);
+  };
+
+  return (
+    <div>
+      <PageHeader title={title} />
+
+      <div style={{ background: NAVY }} className="flex flex-wrap items-center justify-between gap-4 rounded-xl p-5 mb-8">
+        <div className="flex items-center gap-3">
+          <div style={{ background: NAVY_SOFT }} className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Zap size={18} style={{ color: ORANGE }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Un client est là ?</p>
+            <p className="text-xs" style={{ color: "#8590A3" }}>Enregistre sa vente en quelques secondes, sans changer d'onglet.</p>
+          </div>
+        </div>
+        <button onClick={() => setQuickSaleOpen(true)} style={{ background: ORANGE, color: "#fff" }}
+          className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium">
+          <Zap size={16} /> Vente rapide
+        </button>
+      </div>
+
+      {(stats.enRupture.length > 0 || stats.stockBas.length > 0) && (
+        <div style={{ background: "#FFF7ED", border: `1px solid #FBDFB0` }} className="rounded-xl p-4 mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle size={16} style={{ color: ORANGE }} />
+            <p className="text-sm font-semibold" style={{ color: TEXT }}>À réapprovisionner</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {stats.enRupture.map((p) => (
+              <span key={p.id} style={{ background: "#FDEAEA", color: RED }} className="text-xs rounded-full px-2.5 py-1">{p.name} — rupture</span>
+            ))}
+            {stats.stockBas.map((p) => (
+              <span key={p.id} style={{ background: "#FFF1E0", color: ORANGE }} className="text-xs rounded-full px-2.5 py-1">{p.name} — {p.stock} restant{p.stock > 1 ? "s" : ""}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>Situation actuelle</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <StatCard label="Valeur du stock restant" value={stats.valeurStock} />
+        <StatCard label="Caisse — total encaissé (brut)" value={stats.caisseBrute} accent={GREEN} />
+        <StatCard label="Caisse — disponible (net dépenses + réassorts)" value={stats.caisseNette} accent={stats.caisseNette >= 0 ? GREEN : RED} />
+      </div>
+
+      <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
+        Point du jour — {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <StatCard label="Chiffre d'affaires" value={stats.caJour} />
+        <StatCard label="Dépenses" value={stats.depJour} accent={RED} />
+        <StatCard label="Bénéfice net" value={stats.beneficeJour} accent={stats.beneficeJour >= 0 ? GREEN : RED} />
+      </div>
+
+      <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
+        Point du mois — {new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard label="Chiffre d'affaires" value={stats.caMois} />
+        <StatCard label="Dépenses" value={stats.depMois} accent={RED} />
+        <StatCard label="Bénéfice net" value={stats.beneficeMois} accent={stats.beneficeMois >= 0 ? GREEN : RED} />
+      </div>
+
+      {quickSaleOpen && (
+        <QuickSaleModal products={products} presetId={null} onClose={() => setQuickSaleOpen(false)} onConfirm={confirmQuickSale} />
+      )}
+
+      {receipt && (
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total}
+          dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} onClose={() => setReceipt(null)} />
+      )}
+    </div>
+  );
+}
+
+// ---------- Statistiques : tendance et classement des ventes ----------
+function StatsPage({ stats, movements, expenses, title }) {
+  const [rangeDays, setRangeDays] = useState(7);
+
+  const trend = useMemo(() => {
+    const days = [];
+    for (let i = rangeDays - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+      const ventesJour = movements.filter((m) => m.type === "vente" && m.date === dateStr);
+      const ca = ventesJour.reduce((a, v) => a + v.totalVente, 0);
+      const cout = ventesJour.reduce((a, v) => a + v.totalAchat, 0);
+      const dep = expenses.filter((e) => e.date === dateStr).reduce((a, e) => a + e.amount, 0);
+      days.push({ date: dateStr, label, ca, benefice: ca - cout - dep });
+    }
+    return days;
+  }, [movements, expenses, rangeDays]);
+
+  return (
+    <div>
+      <PageHeader title={title} />
+
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-medium" style={{ color: MUTED }}>Évolution du chiffre d'affaires et du bénéfice</p>
+        <div className="flex gap-1">
+          {[7, 30].map((d) => (
+            <button key={d} onClick={() => setRangeDays(d)}
+              className="rounded-lg px-3 py-1 text-xs font-medium"
+              style={{ background: rangeDays === d ? NAVY : CARD, color: rangeDays === d ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>
+              {d} jours
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 mb-10">
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart data={trend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+            <CartesianGrid stroke={LINE} vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: MUTED }} axisLine={{ stroke: LINE }} tickLine={false}
+              interval={rangeDays === 30 ? 3 : 0} />
+            <YAxis tick={{ fontSize: 11, fill: MUTED }} axisLine={false} tickLine={false} width={70}
+              tickFormatter={(v) => v >= 1000 ? `${Math.round(v / 1000)}k` : v} />
+            <Tooltip formatter={(v) => fmt(v)} labelFormatter={(l) => `Le ${l}`}
+              contentStyle={{ borderRadius: 8, border: `1px solid ${LINE}`, fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="ca" name="Chiffre d'affaires" stroke={ORANGE} strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="benefice" name="Bénéfice net" stroke={GREEN} strokeWidth={2} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>Produits les plus vendus (historique complet)</p>
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+        {stats.topProducts.length === 0 ? (
+          <p className="p-4 text-center text-sm" style={{ color: "#9CA3AF" }}>Aucune vente enregistrée pour l'instant.</p>
+        ) : (
+          <div className="overflow-x-auto"><table className="w-full text-sm" style={{ minWidth: 560 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+                <th className="p-3 font-normal">Rang</th>
+                <th className="p-3 font-normal">Produit</th>
+                <th className="p-3 font-normal">Qté vendue</th>
+                <th className="p-3 font-normal">CA généré</th>
+                <th className="p-3 font-normal">Bénéfice</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.topProducts.map((p, i) => (
+                <tr key={p.productId} style={{ borderTop: `1px solid ${LINE}` }}>
+                  <td className="p-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                      style={{ background: i === 0 ? ORANGE : "#EEF1F5", color: i === 0 ? "#fff" : "#6B7280" }}>
+                      {i === 0 ? <Trophy size={13} /> : i + 1}
+                    </div>
+                  </td>
+                  <td className="p-3">{p.name}</td>
+                  <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{p.qty}</td>
+                  <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(p.revenue)}</td>
+                  <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: p.profit >= 0 ? GREEN : RED }}>{fmt(p.profit)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        )}
+      </div>
+
+      <p className="text-sm mb-3 mt-10 font-medium" style={{ color: MUTED }}>Dépenses par catégorie (historique complet)</p>
+      {stats.depensesParCategorie.length === 0 ? (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 text-center text-sm">
+          <p style={{ color: "#9CA3AF" }}>Aucune dépense enregistrée pour l'instant.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4">
+            <ResponsiveContainer width="100%" height={Math.max(220, stats.depensesParCategorie.length * 42)}>
+              <BarChart data={stats.depensesParCategorie} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid stroke={LINE} horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: MUTED }} axisLine={{ stroke: LINE }} tickLine={false}
+                  tickFormatter={(v) => v >= 1000 ? `${Math.round(v / 1000)}k` : v} />
+                <YAxis type="category" dataKey="category" tick={{ fontSize: 12, fill: TEXT }} axisLine={false} tickLine={false} width={110} />
+                <Tooltip formatter={(v) => fmt(v)} contentStyle={{ borderRadius: 8, border: `1px solid ${LINE}`, fontSize: 12 }} />
+                <Bar dataKey="total" radius={[0, 6, 6, 0]}>
+                  {stats.depensesParCategorie.map((_, i) => <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden self-start">
+            <div className="overflow-x-auto"><table className="w-full text-sm" style={{ minWidth: 560 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+                  <th className="p-3 font-normal">Catégorie</th>
+                  <th className="p-3 font-normal">Total</th>
+                  <th className="p-3 font-normal">Part</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.depensesParCategorie.map((c, i) => (
+                  <tr key={c.category} style={{ borderTop: `1px solid ${LINE}` }}>
+                    <td className="p-3">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: CAT_COLORS[i % CAT_COLORS.length] }} />
+                        {c.category}
+                      </span>
+                    </td>
+                    <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: RED }}>{fmt(c.total)}</td>
+                    <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{c.pct.toFixed(0)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- Reçu imprimable ----------
+function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 no-print" style={{ background: "rgba(16,27,46,0.45)" }}>
+      <style>{`
+        @media print {
+          body * { visibility: hidden; }
+          .receipt-print, .receipt-print * { visibility: visible; }
+          .receipt-print { position: fixed; left: 0; top: 0; width: 100%; padding: 16px; }
+          .no-print-inner { display: none !important; }
+        }
+      `}</style>
+      <div style={{ background: CARD }} className="w-full max-w-xs rounded-xl overflow-hidden">
+        <div className="receipt-print p-5" style={{ fontFamily: "ui-monospace, monospace" }}>
+          <div className="text-center mb-3">
+            <p className="text-sm font-semibold" style={{ color: TEXT }}>{boutiqueName}</p>
+            <p className="text-xs" style={{ color: MUTED }}>Reçu de vente</p>
+            <p className="text-xs" style={{ color: MUTED }}>{dateLabel} — {timeLabel}</p>
+          </div>
+          <div style={{ borderTop: `1px dashed ${LINE}`, borderBottom: `1px dashed ${LINE}` }} className="py-2 my-2 space-y-1.5">
+            {items.map((it, i) => (
+              <div key={i} className="flex justify-between text-xs gap-2">
+                <span className="flex-1">{it.qty} × {it.name}</span>
+                <span>{fmt(it.qty * it.price)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between text-sm font-semibold mb-3">
+            <span>Total</span>
+            <span>{fmt(total)}</span>
+          </div>
+          <p className="text-center text-xs" style={{ color: MUTED }}>Merci de votre achat !</p>
+        </div>
+
+        <div className="no-print-inner flex gap-2 p-4" style={{ borderTop: `1px solid ${LINE}` }}>
+          <button onClick={onClose} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Fermer</button>
+          <button onClick={() => window.print()} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium flex items-center justify-center gap-2">
+            <Printer size={15} /> Imprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Fournisseurs ----------
+const EMPTY_SUPPLIER = { name: "", phone: "", notes: "" };
+
+function whatsappLink(phone) {
+  const digits = (phone || "").replace(/[^0-9]/g, "");
+  return `https://wa.me/${digits}`;
+}
+
+function Suppliers({ suppliers, setSuppliers, products, title }) {
+  const [form, setForm] = useState(EMPTY_SUPPLIER);
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+
+  const reset = () => { setForm(EMPTY_SUPPLIER); setEditingId(null); setShowForm(false); };
+
+  const save = () => {
+    if (!form.name.trim() || !form.phone.trim()) return;
+    if (editingId) {
+      setSuppliers(suppliers.map((s) => (s.id === editingId ? { ...s, name: form.name.trim(), phone: form.phone.trim(), notes: form.notes.trim() } : s)));
+    } else {
+      setSuppliers([...suppliers, { id: uid(), name: form.name.trim(), phone: form.phone.trim(), notes: form.notes.trim() }]);
+    }
+    reset();
+  };
+
+  const edit = (s) => { setForm({ name: s.name, phone: s.phone, notes: s.notes || "" }); setEditingId(s.id); setShowForm(true); };
+  const remove = (id) => setSuppliers(suppliers.filter((s) => s.id !== id));
+
+  return (
+    <div>
+      <PageHeader title={title} actionLabel="Ajouter un fournisseur" onAction={() => { setEditingId(null); setForm(EMPTY_SUPPLIER); setShowForm(true); }} />
+
+      {showForm && (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Nom du fournisseur</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Numéro WhatsApp (indicatif inclus)</label>
+            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Ex : 22670000000"
+              style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs" style={{ color: MUTED }}>Notes (optionnel)</label>
+            <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Ex : livraison le mardi"
+              style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div className="flex gap-2 col-span-2 sm:col-span-4">
+            <button onClick={save} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-3 py-1.5 text-sm font-medium">{editingId ? "Enregistrer" : "Ajouter"}</button>
+            <button onClick={reset} style={{ border: `1px solid ${LINE}` }} className="rounded-lg px-3 py-1.5 text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
+      {suppliers.length === 0 ? (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-6 text-center">
+          <p className="text-sm" style={{ color: "#9CA3AF" }}>Aucun fournisseur enregistré pour l'instant.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {suppliers.map((s) => {
+            const supplierProducts = products.filter((p) => p.supplierId === s.id);
+            return (
+              <div key={s.id} style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-5">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div style={{ background: PAPER }} className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Truck size={18} style={{ color: "#9CA3AF" }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: TEXT }}>{s.name}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>{s.phone}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => edit(s)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Modifier"><Pencil size={14} style={{ color: ORANGE }} /></button>
+                    <button onClick={() => setPendingDelete(s)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Supprimer"><Trash2 size={14} style={{ color: RED }} /></button>
+                  </div>
+                </div>
+
+                {s.notes && <p className="text-xs mb-3" style={{ color: MUTED }}>{s.notes}</p>}
+
+                <p className="text-xs font-medium mb-2" style={{ color: MUTED }}>
+                  Produits fournis {supplierProducts.length > 0 ? `(${supplierProducts.length})` : ""}
+                </p>
+                {supplierProducts.length === 0 ? (
+                  <p className="text-xs mb-4" style={{ color: "#C3C8D1" }}>Aucun produit relié pour l'instant — assigne ce fournisseur depuis la fiche produit.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {supplierProducts.map((p) => (
+                      <span key={p.id} style={{ background: "#EEF1F5", color: "#4B5666" }} className="text-xs rounded-full px-2.5 py-1">
+                        {p.name} — {fmt(p.achat)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <a href={whatsappLink(s.phone)} target="_blank" rel="noopener noreferrer"
+                  style={{ background: "#25D366", color: "#fff" }}
+                  className="w-full rounded-lg py-2.5 text-sm font-medium flex items-center justify-center gap-2">
+                  <MessageCircle size={16} /> Contacter par WhatsApp
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {pendingDelete && (
+        <ConfirmModal
+          title="Supprimer ce fournisseur ?"
+          message={`"${pendingDelete.name}" sera retiré de la liste. Les produits qui lui étaient reliés resteront dans le catalogue, sans fournisseur assigné.`}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={() => { remove(pendingDelete.id); setPendingDelete(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---------- Confirmation avant suppression ----------
+function ConfirmModal({ title, message, onCancel, onConfirm, confirmLabel = "Supprimer" }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(16,27,46,0.45)" }}>
+      <div style={{ background: CARD }} className="w-full max-w-sm rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <div style={{ background: "#FDEAEA" }} className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0">
+            <AlertCircle size={18} style={{ color: RED }} />
+          </div>
+          <h3 className="text-base font-semibold" style={{ color: TEXT }}>{title}</h3>
+        </div>
+        <p className="text-sm mb-5" style={{ color: MUTED }}>{message}</p>
+        <div className="flex gap-2">
+          <button onClick={onCancel} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
+          <button onClick={onConfirm} style={{ background: RED, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Modale de vente rapide ----------
+function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
+  const [productId, setProductId] = useState(presetId || "");
+  const [qty, setQty] = useState("1");
+  const [price, setPrice] = useState(() => {
+    const p = products.find((x) => x.id === presetId);
+    return p ? p.vente : "";
+  });
+  const [error, setError] = useState("");
+
+  const product = products.find((p) => p.id === productId);
+
+  const onSelect = (id) => {
+    setProductId(id);
+    const p = products.find((x) => x.id === id);
+    if (p) setPrice(p.vente);
+  };
+
+  const confirm = () => {
+    setError("");
+    if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
+    if (+qty > product.stock) return setError(`Stock insuffisant (disponible : ${product.stock}).`);
+    onConfirm(product, +qty, +price);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(16,27,46,0.45)" }}>
+      <div style={{ background: CARD }} className="w-full max-w-sm rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Zap size={17} style={{ color: ORANGE }} />
+            <h3 className="text-base font-semibold" style={{ color: TEXT }}>Vente rapide</h3>
+          </div>
+          <button onClick={onClose}><X size={18} style={{ color: MUTED }} /></button>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Produit</label>
+            <select value={productId} onChange={(e) => onSelect(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1">
+              <option value="">— choisir —</option>
+              {products.map((p) => <option key={p.id} value={p.id}>{p.name} (stock : {p.stock})</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Quantité</label>
+              <input type="number" value={qty} onChange={(e) => setQty(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Prix unitaire de vente</label>
+              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+          </div>
+          {product && qty && (
+            <p className="text-xs" style={{ color: MUTED }}>Total : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+price || 0))}</span></p>
+          )}
+          {error && <p className="text-xs flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
+            <button onClick={confirm} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">Encaisser</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Catalogue ----------
+const EMPTY_FORM = { name: "", category: "", achat: "", vente: "", stock: "", seuil: "5", supplierId: "" };
+
+function Catalog({ products, setProducts, movements, setMovements, title, boutiqueName, suppliers }) {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [quickSaleId, setQuickSaleId] = useState(null); // null = closed, "" = open sans présélection
+  const [receipt, setReceipt] = useState(null);
+
+  const reset = () => { setForm(EMPTY_FORM); setEditingId(null); setShowForm(false); };
+
+  const save = () => {
+    if (!form.name.trim() || form.achat === "" || form.vente === "") return;
+    if (editingId) {
+      setProducts(products.map((p) => (p.id === editingId
+        ? { ...p, name: form.name, category: form.category.trim(), achat: +form.achat, vente: +form.vente, seuil: +form.seuil || 0, supplierId: form.supplierId || null }
+        : p)));
+    } else {
+      setProducts([...products, {
+        id: uid(), name: form.name.trim(), category: form.category.trim(),
+        achat: +form.achat, vente: +form.vente, stock: +form.stock || 0, seuil: +form.seuil || 5,
+        supplierId: form.supplierId || null,
+      }]);
+    }
+    reset();
+  };
+
+  const edit = (p) => { setForm({ name: p.name, category: p.category || "", achat: p.achat, vente: p.vente, stock: p.stock, seuil: p.seuil ?? 5, supplierId: p.supplierId || "" }); setEditingId(p.id); setShowForm(true); };
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const remove = (id) => setProducts(products.filter((p) => p.id !== id));
+
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
+
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) &&
+    (categoryFilter ? p.category === categoryFilter : true)
+  );
+
+  const confirmQuickSale = (product, qty, price) => {
+    const mv = {
+      id: uid(), type: "vente", productId: product.id, productName: product.name, qty, date: todayStr(),
+      unitVente: price, unitAchat: product.achat, totalVente: qty * price, totalAchat: qty * product.achat,
+    };
+    setMovements([mv, ...movements]);
+    setProducts(products.map((p) => p.id === product.id ? { ...p, stock: p.stock - qty } : p));
+    const now = new Date();
+    setReceipt({
+      items: [{ name: product.name, qty, price }],
+      total: qty * price,
+      dateLabel: now.toLocaleDateString("fr-FR"),
+      timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    });
+    setQuickSaleId(null);
+  };
+
+  return (
+    <div>
+      <PageHeader
+        title={title}
+        actionLabel="Ajouter un produit"
+        onAction={() => { setEditingId(null); setForm(EMPTY_FORM); setShowForm(true); }}
+        secondaryLabel="Vente rapide"
+        SecondaryIcon={Zap}
+        onSecondary={() => setQuickSaleId("")}
+      />
+
+      <div className="flex flex-wrap gap-3 mb-5">
+        <div className="relative max-w-xs flex-1 min-w-[180px]">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un produit…"
+            style={{ border: `1px solid ${LINE}`, background: CARD }} className="w-full rounded-lg pl-9 pr-3 py-2 text-sm" />
+        </div>
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+          style={{ border: `1px solid ${LINE}`, background: CARD }} className="rounded-lg px-3 py-2 text-sm">
+          <option value="">Toutes les catégories</option>
+          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {showForm && (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
+          <div className="col-span-2 sm:col-span-1">
+            <label className="text-xs" style={{ color: MUTED }}>Nom</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Catégorie</label>
+            <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} list="cat-list"
+              placeholder="Ex : Informatique" style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            <datalist id="cat-list">{categories.map((c) => <option key={c} value={c} />)}</datalist>
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Prix d'achat (unitaire)</label>
+            <input type="number" value={form.achat} onChange={(e) => setForm({ ...form, achat: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Prix de vente (unitaire)</label>
+            <input type="number" value={form.vente} onChange={(e) => setForm({ ...form, vente: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          {!editingId && (
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Stock initial</label>
+              <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+          )}
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Seuil d'alerte (quantité)</label>
+            <input type="number" value={form.seuil} onChange={(e) => setForm({ ...form, seuil: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Fournisseur</label>
+            <select value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1">
+              <option value="">— aucun —</option>
+              {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={save} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-3 py-1.5 text-sm font-medium flex-1">{editingId ? "Enregistrer" : "Ajouter"}</button>
+            <button onClick={reset} style={{ border: `1px solid ${LINE}` }} className="rounded-lg px-3 py-1.5 text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+        <div className="overflow-x-auto"><table className="w-full text-sm" style={{ minWidth: 560 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+              <th className="p-3 font-normal">Produit</th>
+              <th className="p-3 font-normal">Catégorie</th>
+              <th className="p-3 font-normal">Achat (unitaire)</th>
+              <th className="p-3 font-normal">Vente (unitaire)</th>
+              <th className="p-3 font-normal">Stock</th>
+              <th className="p-3 font-normal"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && (
+              <tr><td colSpan={6} className="p-4 text-center text-sm" style={{ color: "#9CA3AF" }}>Aucun produit trouvé.</td></tr>
+            )}
+            {filtered.map((p) => (
+              <tr key={p.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                <td className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div style={{ background: PAPER }} className="w-8 h-8 rounded-lg flex items-center justify-center">
+                      <Package size={15} style={{ color: "#9CA3AF" }} />
+                    </div>
+                    {p.name}
+                  </div>
+                </td>
+                <td className="p-3">
+                  {p.category ? (
+                    <span style={{ background: "#EEF1F5", color: "#4B5666" }} className="text-xs rounded-full px-2 py-0.5">{p.category}</span>
+                  ) : (
+                    <span style={{ color: "#C3C8D1" }}>—</span>
+                  )}
+                </td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(p.achat)}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(p.vente)}</td>
+                <td className="p-3">
+                  {p.stock <= 0 ? (
+                    <span style={{ background: "#FDEAEA", color: RED }} className="text-xs rounded-full px-2 py-0.5">Rupture</span>
+                  ) : p.stock <= (p.seuil ?? 5) ? (
+                    <span style={{ background: "#FFF1E0", color: ORANGE }} className="text-xs rounded-full px-2 py-0.5">{p.stock} — à réapprovisionner</span>
+                  ) : (
+                    <span style={{ fontFamily: "ui-monospace, monospace" }}>{p.stock}</span>
+                  )}
+                </td>
+                <td className="p-3 text-right whitespace-nowrap">
+                  <button onClick={() => setQuickSaleId(p.id)} disabled={p.stock <= 0} className="inline-flex p-1.5 rounded-md mr-1 hover:bg-gray-100 disabled:opacity-30" title="Vente rapide"><Zap size={14} style={{ color: GREEN }} /></button>
+                  <button onClick={() => edit(p)} className="inline-flex p-1.5 rounded-md mr-1 hover:bg-gray-100" title="Modifier"><Pencil size={14} style={{ color: ORANGE }} /></button>
+                  <button onClick={() => setPendingDelete(p)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Supprimer"><Trash2 size={14} style={{ color: RED }} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      </div>
+
+      {quickSaleId !== null && (
+        <QuickSaleModal
+          products={products}
+          presetId={quickSaleId || null}
+          onClose={() => setQuickSaleId(null)}
+          onConfirm={confirmQuickSale}
+        />
+      )}
+
+      {pendingDelete && (
+        <ConfirmModal
+          title="Supprimer ce produit ?"
+          message={`"${pendingDelete.name}" sera définitivement retiré du catalogue. Son historique de ventes et d'entrées reste conservé.`}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={() => { remove(pendingDelete.id); setPendingDelete(null); }}
+        />
+      )}
+
+      {receipt && (
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total}
+          dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} onClose={() => setReceipt(null)} />
+      )}
+    </div>
+  );
+}
+
+// ---------- Mouvements : Ventes et Entrées séparées, chacune avec son propre environnement ----------
+function Movements({ products, setProducts, movements, setMovements, title }) {
+  const [subTab, setSubTab] = useState("vente");
+  const [pendingRemove, setPendingRemove] = useState(null);
+
+  const removeMovement = (mv) => {
+    setMovements(movements.filter((m) => m.id !== mv.id));
+    setProducts(products.map((p) => p.id === mv.productId ? { ...p, stock: p.stock + (mv.type === "entree" ? -mv.qty : mv.qty) } : p));
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold" style={{ color: TEXT }}>{title}</h2>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+        <button onClick={() => setSubTab("vente")}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
+          style={{ background: subTab === "vente" ? NAVY : CARD, color: subTab === "vente" ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>
+          <ArrowUpCircle size={16} /> Ventes
+        </button>
+        <button onClick={() => setSubTab("entree")}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
+          style={{ background: subTab === "entree" ? NAVY : CARD, color: subTab === "entree" ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>
+          <ArrowDownCircle size={16} /> Entrées (réassort)
+        </button>
+      </div>
+
+      {subTab === "vente" ? (
+        <SalesPanel products={products} setProducts={setProducts} movements={movements} setMovements={setMovements} onRemove={setPendingRemove} />
+      ) : (
+        <EntriesPanel products={products} setProducts={setProducts} movements={movements} setMovements={setMovements} onRemove={setPendingRemove} />
+
+      )}
+
+      {pendingRemove && (
+        <ConfirmModal
+          title={pendingRemove.type === "vente" ? "Annuler cette vente ?" : "Annuler cette entrée ?"}
+          message={
+            pendingRemove.type === "vente"
+              ? `${pendingRemove.qty} × "${pendingRemove.productName}" (${fmt(pendingRemove.totalVente)}) sera retiré de l'historique et le stock sera restauré.`
+              : `${pendingRemove.qty} × "${pendingRemove.productName}" (${fmt(pendingRemove.totalAchat)}) sera retiré de l'historique et le stock sera diminué en conséquence.`
+          }
+          confirmLabel="Annuler le mouvement"
+          onCancel={() => setPendingRemove(null)}
+          onConfirm={() => { removeMovement(pendingRemove); setPendingRemove(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---------- Environnement des ventes ----------
+function SalesPanel({ products, setProducts, movements, setMovements, onRemove }) {
+  const [showForm, setShowForm] = useState(false);
+  const [productId, setProductId] = useState("");
+  const [qty, setQty] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [error, setError] = useState("");
+
+  const product = products.find((p) => p.id === productId);
+  const ventes = movements.filter((mv) => mv.type === "vente");
+
+  const onSelectProduct = (id) => {
+    setProductId(id);
+    const p = products.find((x) => x.id === id);
+    if (p) setUnitPrice(p.vente);
+  };
+
+  const submit = () => {
+    setError("");
+    if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
+    if (+qty > product.stock) return setError(`Stock insuffisant (disponible : ${product.stock}).`);
+    const q = +qty;
+    const mv = {
+      id: uid(), type: "vente", productId, productName: product.name, qty: q, date: todayStr(),
+      unitVente: +unitPrice, unitAchat: product.achat,
+      totalVente: q * +unitPrice, totalAchat: q * product.achat,
+    };
+    setMovements([mv, ...movements]);
+    setProducts(products.map((p) => p.id === productId ? { ...p, stock: p.stock - q } : p));
+    setProductId(""); setQty(""); setUnitPrice(""); setShowForm(false);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowForm(true)} style={{ background: ORANGE, color: "#fff" }}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium">
+          <Plus size={16} /> Nouvelle vente
+        </button>
+      </div>
+
+      {showForm && (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
+            <div className="col-span-2 sm:col-span-2">
+              <label className="text-xs" style={{ color: MUTED }}>Produit</label>
+              <select value={productId} onChange={(e) => onSelectProduct(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1">
+                <option value="">— choisir —</option>
+                {products.map((p) => <option key={p.id} value={p.id}>{p.name} (stock : {p.stock})</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Quantité</label>
+              <input type="number" value={qty} onChange={(e) => setQty(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Prix unitaire de vente</label>
+              <input type="number" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+          </div>
+          {product && qty && (
+            <p className="text-xs mt-3" style={{ color: MUTED }}>Total de la vente : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+unitPrice || 0))}</span></p>
+          )}
+          {error && <p className="text-xs flex items-center gap-1 mt-2" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+          <div className="flex gap-2 mt-3">
+            <button onClick={submit} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-4 py-1.5 text-sm font-medium">Enregistrer la vente</button>
+            <button onClick={() => setShowForm(false)} style={{ border: `1px solid ${LINE}` }} className="rounded-lg px-4 py-1.5 text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+        <div className="overflow-x-auto"><table className="w-full text-sm" style={{ minWidth: 560 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+              <th className="p-3 font-normal">Date</th>
+              <th className="p-3 font-normal">Produit</th>
+              <th className="p-3 font-normal">Qté</th>
+              <th className="p-3 font-normal">Prix unitaire</th>
+              <th className="p-3 font-normal">Total encaissé</th>
+              <th className="p-3 font-normal"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {ventes.length === 0 && (
+              <tr><td colSpan={6} className="p-4 text-center text-sm" style={{ color: "#9CA3AF" }}>Aucune vente enregistrée.</td></tr>
+            )}
+            {ventes.map((mv) => (
+              <tr key={mv.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                <td className="p-3">{mv.date}</td>
+                <td className="p-3">{mv.productName}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{mv.qty}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(mv.unitVente)}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: GREEN }}>{fmt(mv.totalVente)}</td>
+                <td className="p-3 text-right">
+                  <button onClick={() => onRemove(mv)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Annuler"><Trash2 size={14} style={{ color: RED }} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Environnement des entrées (réassort) ----------
+function EntriesPanel({ products, setProducts, movements, setMovements, onRemove }) {
+  const [showForm, setShowForm] = useState(false);
+  const [productId, setProductId] = useState("");
+  const [qty, setQty] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [error, setError] = useState("");
+
+  const product = products.find((p) => p.id === productId);
+  const entrees = movements.filter((mv) => mv.type === "entree");
+
+  const onSelectProduct = (id) => {
+    setProductId(id);
+    const p = products.find((x) => x.id === id);
+    if (p) setUnitPrice(p.achat);
+  };
+
+  const submit = () => {
+    setError("");
+    if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
+    const q = +qty;
+    const mv = {
+      id: uid(), type: "entree", productId, productName: product.name, qty: q, date: todayStr(),
+      unitVente: product.vente, unitAchat: +unitPrice,
+      totalVente: 0, totalAchat: q * +unitPrice,
+    };
+    setMovements([mv, ...movements]);
+    setProducts(products.map((p) => p.id === productId ? { ...p, stock: p.stock + q } : p));
+    setProductId(""); setQty(""); setUnitPrice(""); setShowForm(false);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowForm(true)} style={{ background: ORANGE, color: "#fff" }}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium">
+          <Plus size={16} /> Nouvelle entrée
+        </button>
+      </div>
+
+      {showForm && (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
+            <div className="col-span-2 sm:col-span-2">
+              <label className="text-xs" style={{ color: MUTED }}>Produit</label>
+              <select value={productId} onChange={(e) => onSelectProduct(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1">
+                <option value="">— choisir —</option>
+                {products.map((p) => <option key={p.id} value={p.id}>{p.name} (stock : {p.stock})</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Quantité reçue</label>
+              <input type="number" value={qty} onChange={(e) => setQty(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs" style={{ color: MUTED }}>Prix unitaire payé</label>
+              <input type="number" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            </div>
+          </div>
+          {product && qty && (
+            <p className="text-xs mt-3" style={{ color: MUTED }}>Coût total du réassort : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+unitPrice || 0))}</span></p>
+          )}
+          {error && <p className="text-xs flex items-center gap-1 mt-2" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+          <div className="flex gap-2 mt-3">
+            <button onClick={submit} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-4 py-1.5 text-sm font-medium">Enregistrer l'entrée</button>
+            <button onClick={() => setShowForm(false)} style={{ border: `1px solid ${LINE}` }} className="rounded-lg px-4 py-1.5 text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+        <div className="overflow-x-auto"><table className="w-full text-sm" style={{ minWidth: 560 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+              <th className="p-3 font-normal">Date</th>
+              <th className="p-3 font-normal">Produit</th>
+              <th className="p-3 font-normal">Qté</th>
+              <th className="p-3 font-normal">Prix unitaire</th>
+              <th className="p-3 font-normal">Coût total</th>
+              <th className="p-3 font-normal"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {entrees.length === 0 && (
+              <tr><td colSpan={6} className="p-4 text-center text-sm" style={{ color: "#9CA3AF" }}>Aucune entrée enregistrée.</td></tr>
+            )}
+            {entrees.map((mv) => (
+              <tr key={mv.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                <td className="p-3">{mv.date}</td>
+                <td className="p-3">{mv.productName}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{mv.qty}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(mv.unitAchat)}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: ORANGE }}>{fmt(mv.totalAchat)}</td>
+                <td className="p-3 text-right">
+                  <button onClick={() => onRemove(mv)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Annuler"><Trash2 size={14} style={{ color: RED }} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Dépenses ----------
+function Expenses({ expenses, setExpenses, title }) {
+  const [showForm, setShowForm] = useState(false);
+  const [label, setLabel] = useState("");
+  const [category, setCategory] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(todayStr());
+
+  const categories = [...new Set(expenses.map((e) => e.category).filter(Boolean))].sort();
+
+  const add = () => {
+    if (!label.trim() || !amount || +amount <= 0) return;
+    setExpenses([{ id: uid(), label: label.trim(), category: category.trim(), amount: +amount, date }, ...expenses]);
+    setLabel(""); setCategory(""); setAmount(""); setShowForm(false);
+  };
+  const remove = (id) => setExpenses(expenses.filter((e) => e.id !== id));
+  const [pendingDelete, setPendingDelete] = useState(null);
+
+  return (
+    <div>
+      <PageHeader title={title} actionLabel="Ajouter une dépense" onAction={() => setShowForm(true)} />
+
+      {showForm && (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-5 gap-3 items-end">
+          <div className="col-span-2">
+            <label className="text-xs" style={{ color: MUTED }}>Libellé (loyer, facture…)</label>
+            <input value={label} onChange={(e) => setLabel(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Catégorie</label>
+            <input value={category} onChange={(e) => setCategory(e.target.value)} list="exp-cat-list"
+              placeholder="Ex : Loyer" style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            <datalist id="exp-cat-list">{categories.map((c) => <option key={c} value={c} />)}</datalist>
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Montant</label>
+            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Date</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div className="col-span-2 sm:col-span-5 flex gap-2">
+            <button onClick={add} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-4 py-1.5 text-sm font-medium">Ajouter</button>
+            <button onClick={() => setShowForm(false)} style={{ border: `1px solid ${LINE}` }} className="rounded-lg px-4 py-1.5 text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+        <div className="overflow-x-auto"><table className="w-full text-sm" style={{ minWidth: 560 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+              <th className="p-3 font-normal">Date</th>
+              <th className="p-3 font-normal">Libellé</th>
+              <th className="p-3 font-normal">Catégorie</th>
+              <th className="p-3 font-normal">Montant</th>
+              <th className="p-3 font-normal"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.length === 0 && (
+              <tr><td colSpan={5} className="p-4 text-center text-sm" style={{ color: "#9CA3AF" }}>Aucune dépense enregistrée.</td></tr>
+            )}
+            {expenses.map((e) => (
+              <tr key={e.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                <td className="p-3">{e.date}</td>
+                <td className="p-3">{e.label}</td>
+                <td className="p-3">
+                  {e.category ? (
+                    <span style={{ background: "#EEF1F5", color: "#4B5666" }} className="text-xs rounded-full px-2 py-0.5">{e.category}</span>
+                  ) : (
+                    <span style={{ color: "#C3C8D1" }}>—</span>
+                  )}
+                </td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: RED }}>{fmt(e.amount)}</td>
+                <td className="p-3 text-right">
+                  <button onClick={() => setPendingDelete(e)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Supprimer"><Trash2 size={14} style={{ color: RED }} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      </div>
+
+      {pendingDelete && (
+        <ConfirmModal
+          title="Supprimer cette dépense ?"
+          message={`"${pendingDelete.label}" (${fmt(pendingDelete.amount)}) sera définitivement retirée de l'historique et du calcul de la caisse.`}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={() => { remove(pendingDelete.id); setPendingDelete(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---------- Racine ----------
+function App() {
+  const [boutique, setBoutique] = useState(null);
+  if (!boutique) return <LoginScreen onEnter={setBoutique} />;
+  return <ShopApp boutique={boutique} onLogout={() => setBoutique(null)} />;
+}
+
+
+const __root = ReactDOM.createRoot(document.getElementById("root"));
+__root.render(React.createElement(App));
+
+</script>
+</body>
+</html>
