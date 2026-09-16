@@ -5,10 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101B2E">
 <title>Gestion de boutique</title>
+<script>
+  window.onerror = function (msg, url, line, col, err) {
+    var box = document.getElementById("root");
+    if (box) {
+      box.innerHTML =
+        '<div style="padding:20px;font-family:ui-monospace,monospace;font-size:12px;' +
+        'color:#B3432D;white-space:pre-wrap;line-height:1.5;">' +
+        '<strong>Une erreur a empêché le chargement de l\'application.</strong><br><br>' +
+        String(msg) + ' (ligne ' + line + ')<br>' +
+        (err && err.stack ? String(err.stack).slice(0, 800) : '') +
+        '<br><br>Fais une capture de ce message et envoie-la.</div>';
+    }
+    return false;
+  };
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.453.0/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -36,25 +52,32 @@ const {
 // Fabrique d'icones a partir du paquet lucide (UMD)
 const ICON_NAMES = ["Store", "Plus", "Trash2", "ArrowDownCircle", "ArrowUpCircle", "LogOut", "LayoutGrid", "Package", "Repeat", "Receipt", "AlertCircle", "ChevronRight", "Search", "Pencil", "Zap", "X", "Download", "Trophy", "TrendingUp", "ShoppingCart", "Minus", "Check", "Printer", "Truck", "MessageCircle", "ArrowLeft"];
 function toKebab(n) { return n.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase(); }
-function lookupIcon(name) {
-  const lib = (window.lucide && (window.lucide.icons || window.lucide)) || {};
-  return lib[name] || lib[toKebab(name)] || null;
+function lookupIconRaw(name) {
+  const lib = (window.lucide && window.lucide.icons) || window.lucide || {};
+  const camel = name.charAt(0).toLowerCase() + name.slice(1);
+  return lib[name] || lib[toKebab(name)] || lib[camel] || null;
 }
 function makeIcon(name) {
   return function Icon(props) {
     const size = props.size || 24;
-    const node = lookupIcon(name);
+    const raw = lookupIconRaw(name);
     const base = {
       xmlns: "http://www.w3.org/2000/svg", width: size, height: size,
       viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
       strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round",
       style: props.style, className: props.className
     };
-    if (!node) return React.createElement("svg", base);
-    const children = (Array.isArray(node) ? node : (node[2] || [])).map(function (c, i) {
+    if (!raw || !Array.isArray(raw)) return React.createElement("svg", base);
+    // Deux formats possibles selon la version de lucide :
+    // soit une liste d'enfants [[tag, attrs], ...], soit [tag, attrs, enfants]
+    let kids = raw;
+    if (raw.length === 3 && typeof raw[0] === "string" && Array.isArray(raw[2])) {
+      kids = raw[2];
+    }
+    const children = kids.map(function (c, i) {
       if (!Array.isArray(c)) return null;
       return React.createElement(c[0], Object.assign({ key: i }, c[1]));
-    });
+    }).filter(Boolean);
     return React.createElement("svg", base, children);
   };
 }
@@ -1773,8 +1796,13 @@ function App() {
 }
 
 
-const __root = ReactDOM.createRoot(document.getElementById("root"));
-__root.render(React.createElement(App));
+try {
+  const __root = ReactDOM.createRoot(document.getElementById("root"));
+  __root.render(React.createElement(App));
+} catch (e) {
+  if (window.onerror) window.onerror(e.message, "", 0, 0, e);
+  else throw e;
+}
 
 </script>
 </body>
