@@ -49,15 +49,15 @@ const {
 } = Recharts;
 
 // Icones integrees directement (aucune dependance externe)
-const ICON_SVGS = {"Store": "<path d=\"M3 9h18l-1.5-5h-15L3 9z\"/><path d=\"M3 9v11h18V9\"/><path d=\"M9 20v-6h6v6\"/>", "Plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "Trash2": "<path d=\"M3 6h18\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"/><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"/>", "ArrowDownCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"8 12 12 16 16 12\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"/>", "ArrowUpCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"16 12 12 8 8 12\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"/>", "LogOut": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/>", "LayoutGrid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "Package": "<path d=\"M16.5 9.4 7.5 4.21\"/><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"/><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"/><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"/>", "Repeat": "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>", "Receipt": "<path d=\"M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2z\"/><line x1=\"8\" y1=\"7\" x2=\"16\" y2=\"7\"/><line x1=\"8\" y1=\"11\" x2=\"16\" y2=\"11\"/>", "AlertCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"/>", "ChevronRight": "<polyline points=\"9 18 15 12 9 6\"/>", "Search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/>", "Pencil": "<path d=\"M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z\"/>", "Zap": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>", "X": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/>", "Download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/>", "Trophy": "<path d=\"M8 21h8\"/><path d=\"M12 17v4\"/><path d=\"M7 4h10v5a5 5 0 0 1-10 0z\"/><path d=\"M17 4h3a2 2 0 0 1-2 4h-1\"/><path d=\"M7 4H4a2 2 0 0 0 2 4h1\"/>", "TrendingUp": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>", "ShoppingCart": "<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>", "Minus": "<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>", "Check": "<polyline points=\"20 6 9 17 4 12\"/>", "Printer": "<polyline points=\"6 9 6 2 18 2 18 9\"/><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"/>", "Truck": "<path d=\"M10 17h4V5H2v12h3\"/><path d=\"M14 9h4l3 3v5h-2\"/><circle cx=\"7.5\" cy=\"17.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"17.5\" r=\"1.5\"/>", "MessageCircle": "<path d=\"M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.94 8.94 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9z\"/>", "ArrowLeft": "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>", "Menu": "<line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/>"};
+const ICON_SVGS = {"Store": "<path d=\"M3 9h18l-1.5-5h-15L3 9z\"/><path d=\"M3 9v11h18V9\"/><path d=\"M9 20v-6h6v6\"/>", "Plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "Trash2": "<path d=\"M3 6h18\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"/><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"/>", "ArrowDownCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"8 12 12 16 16 12\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"/>", "ArrowUpCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"16 12 12 8 8 12\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"/>", "LogOut": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/>", "LayoutGrid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "Package": "<path d=\"M16.5 9.4 7.5 4.21\"/><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"/><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"/><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"/>", "Repeat": "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>", "Receipt": "<path d=\"M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2z\"/><line x1=\"8\" y1=\"7\" x2=\"16\" y2=\"7\"/><line x1=\"8\" y1=\"11\" x2=\"16\" y2=\"11\"/>", "AlertCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"/>", "ChevronRight": "<polyline points=\"9 18 15 12 9 6\"/>", "Search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/>", "Pencil": "<path d=\"M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z\"/>", "Zap": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>", "X": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/>", "Download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/>", "Trophy": "<path d=\"M8 21h8\"/><path d=\"M12 17v4\"/><path d=\"M7 4h10v5a5 5 0 0 1-10 0z\"/><path d=\"M17 4h3a2 2 0 0 1-2 4h-1\"/><path d=\"M7 4H4a2 2 0 0 0 2 4h1\"/>", "TrendingUp": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>", "ShoppingCart": "<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>", "Minus": "<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>", "Check": "<polyline points=\"20 6 9 17 4 12\"/>", "Printer": "<polyline points=\"6 9 6 2 18 2 18 9\"/><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"/>", "Truck": "<path d=\"M10 17h4V5H2v12h3\"/><path d=\"M14 9h4l3 3v5h-2\"/><circle cx=\"7.5\" cy=\"17.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"17.5\" r=\"1.5\"/>", "MessageCircle": "<path d=\"M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.94 8.94 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9z\"/>", "ArrowLeft": "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>", "Vault": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"15\" rx=\"2\"/><circle cx=\"12\" cy=\"11.5\" r=\"3.5\"/><path d=\"M12 8v1.5M12 13.5V15M8.5 11.5H10M14 11.5h1.5\"/><path d=\"M7 19v2M17 19v2\"/>", "Wallet": "<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"/><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"/>", "Coins": "<circle cx=\"8\" cy=\"8\" r=\"6\"/><path d=\"M18.09 10.37A6 6 0 1 1 10.34 18\"/><path d=\"M7 6h1v4\"/>", "Mail": "<rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><path d=\"m22 7-10 5L2 7\"/>", "BookOpen": "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>", "Menu": "<line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/>"};
 function makeIcon(name) {
   return function Icon(props) {
     const size = props.size || 24;
     return React.createElement("svg", {
       xmlns: "http://www.w3.org/2000/svg", width: size, height: size,
       viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
-      strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round",
-      style: props.style, className: props.className,
+      strokeWidth: props.strokeWidth || 2, strokeLinecap: "round", strokeLinejoin: "round",
+      style: Object.assign({}, props.color ? { color: props.color } : {}, props.style), className: props.className,
       dangerouslySetInnerHTML: { __html: ICON_SVGS[name] || "" }
     });
   };
@@ -92,6 +92,11 @@ const Truck = __I["Truck"];
 const MessageCircle = __I["MessageCircle"];
 const ArrowLeft = __I["ArrowLeft"];
 const Menu = __I["Menu"];
+const Vault = __I["Vault"];
+const Wallet = __I["Wallet"];
+const Coins = __I["Coins"];
+const Mail = __I["Mail"];
+const BookOpen = __I["BookOpen"];
 
 // ---------- Palette ----------
 const NAVY = "#101B2E";
@@ -118,7 +123,7 @@ const simpleHash = (s) => {
   return h.toString(36);
 };
 
-function exportToExcel(boutique, products, movements, expenses) {
+function buildExport(boutique, products, movements, expenses) {
   const wb = XLSX.utils.book_new();
 
   const wsProducts = XLSX.utils.json_to_sheet(products.map((p) => ({
@@ -171,7 +176,34 @@ function exportToExcel(boutique, products, movements, expenses) {
   XLSX.utils.book_append_sheet(wb, wsResume, "Résumé");
 
   const safeName = boutique.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-  XLSX.writeFile(wb, `${safeName}-export-${todayStr()}.xlsx`);
+  const fileName = `${safeName}-export-${todayStr()}.xlsx`;
+  const summary = `Export de ${boutique.name} du ${todayStr()}\nCaisse disponible : ${fmt(caisseBrute - depensesTotal - coutReassortTotal)}\nValeur du stock : ${fmt(products.reduce((a, p) => a + p.stock * p.achat, 0))}`;
+  return { wb, fileName, summary };
+}
+
+function exportToExcel(boutique, products, movements, expenses) {
+  const { wb, fileName } = buildExport(boutique, products, movements, expenses);
+  XLSX.writeFile(wb, fileName);
+}
+
+// Envoi par email : partage du fichier (Gmail, WhatsApp…) si le téléphone le permet, sinon téléchargement + brouillon d'email
+async function sendExportByEmail(boutique, products, movements, expenses, email) {
+  const { wb, fileName, summary } = buildExport(boutique, products, movements, expenses);
+  const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  try {
+    const file = new File([out], fileName, { type: mime });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: `Export ${boutique.name}`, text: summary });
+      return "shared";
+    }
+  } catch (e) {
+    if (e && e.name === "AbortError") return "cancelled";
+  }
+  XLSX.writeFile(wb, fileName);
+  const body = summary + `\n\nLe fichier ${fileName} vient d'être téléchargé : joignez-le à ce message avant de l'envoyer.`;
+  window.location.href = `mailto:${encodeURIComponent(email || "")}?subject=${encodeURIComponent("Export " + boutique.name)}&body=${encodeURIComponent(body)}`;
+  return "mailto";
 }
 
 async function storeGet(key) {
@@ -199,6 +231,18 @@ function LoginScreen({ onEnter }) {
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
+  const [toDelete, setToDelete] = useState(null);
+
+  const deleteBoutique = async (b) => {
+    const newList = boutiques.filter((x) => x.id !== b.id);
+    await storeSet("boutiques_list", newList);
+    try {
+      const prefix = "gb_b_" + b.id + "_";
+      Object.keys(window.localStorage).filter((k) => k.indexOf(prefix) === 0).forEach((k) => window.localStorage.removeItem(k));
+    } catch (e) {}
+    setBoutiques(newList);
+    setToDelete(null);
+  };
 
   useEffect(() => {
     (async () => {
@@ -256,11 +300,17 @@ function LoginScreen({ onEnter }) {
               <div className="space-y-1">
                 <p className="text-xs uppercase tracking-wide" style={{ color: MUTED }}>Boutiques existantes</p>
                 {boutiques.map((b) => (
-                  <button key={b.id} onClick={() => openBoutique(b)} style={{ border: `1px solid ${LINE}` }}
-                    className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-gray-50">
-                    <span>{b.name}</span>
-                    <ChevronRight size={16} style={{ color: "#9CA3AF" }} />
-                  </button>
+                  <div key={b.id} className="flex items-stretch gap-1">
+                    <button onClick={() => openBoutique(b)} style={{ border: `1px solid ${LINE}` }}
+                      className="flex-1 min-w-0 flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-gray-50">
+                      <span className="truncate">{b.name}</span>
+                      <ChevronRight size={16} style={{ color: "#9CA3AF" }} />
+                    </button>
+                    <button onClick={() => setToDelete(b)} title="Supprimer cette boutique" aria-label="Supprimer cette boutique"
+                      style={{ border: `1px solid ${LINE}` }} className="rounded-lg px-2.5 hover:bg-gray-50">
+                      <Trash2 size={15} style={{ color: RED }} />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -305,12 +355,13 @@ function LoginScreen({ onEnter }) {
         )}
         <p className="text-[11px] mt-6" style={{ color: "#9CA3AF" }}>Chaque boutique a ses propres données, séparées des autres.</p>
       </div>
+      {toDelete && <DeleteBoutiqueModal boutique={toDelete} onCancel={() => setToDelete(null)} onConfirm={() => deleteBoutique(toDelete)} />}
     </div>
   );
 }
 
 // ---------- Application principale ----------
-function ShopApp({ boutique, onLogout }) {
+function ShopApp({ boutique, onLogout, onRename }) {
   const ns = (k) => `b_${boutique.id}_${k}`;
   const [tab, setTab] = useState("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -319,6 +370,9 @@ function ShopApp({ boutique, onLogout }) {
   const [expenses, setExpenses] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -327,6 +381,7 @@ function ShopApp({ boutique, onLogout }) {
       ]);
       setProducts(p || []); setMovements(m || []); setExpenses(e || []); setSuppliers(s || []);
       setLoaded(true);
+      if (!(await storeGet(ns("guide_seen")))) setGuideOpen(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boutique.id]);
@@ -394,6 +449,21 @@ function ShopApp({ boutique, onLogout }) {
     return <div style={{ background: PAPER, minHeight: "100%" }} className="flex items-center justify-center text-sm">Chargement des données…</div>;
   }
 
+  const closeGuide = () => { setGuideOpen(false); storeSet(ns("guide_seen"), true); };
+
+  const renderActions = (py, size, close) => {
+    const run = (fn) => () => { fn(); if (close) close(); };
+    const cls = `flex items-center gap-3 px-3 ${py} rounded-lg text-sm w-full`;
+    return (
+      <>
+        <button onClick={run(() => setGuideOpen(true))} className={cls} style={{ color: "#CBD2DE" }}><BookOpen size={size} /> <span>Guide d'utilisation</span></button>
+        <button onClick={run(() => setRenameOpen(true))} className={cls} style={{ color: "#CBD2DE" }}><Pencil size={size} /> <span>Renommer la boutique</span></button>
+        <button onClick={run(() => exportToExcel(boutique, products, movements, expenses))} className={cls} style={{ color: "#CBD2DE" }}><Download size={size} /> <span>Exporter (Excel)</span></button>
+        <button onClick={run(() => setEmailOpen(true))} className={cls} style={{ color: "#CBD2DE" }}><Mail size={size} /> <span>Envoyer par email</span></button>
+      </>
+    );
+  };
+
   const NAV = [
     { id: "dashboard", label: "Tableau de bord", icon: LayoutGrid },
     { id: "catalog", label: "Produits", icon: Package },
@@ -439,8 +509,8 @@ function ShopApp({ boutique, onLogout }) {
           <p className="text-sm font-semibold text-white truncate">{boutique.name}</p>
         </div>
         <button onClick={() => setMobileMenuOpen(true)} aria-label="Ouvrir le menu"
-          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: NAVY_SOFT }}>
-          <Menu size={19} color="#fff" />
+          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: ORANGE }}>
+          <Menu size={22} color="#fff" strokeWidth={2.5} />
         </button>
       </div>
 
@@ -471,9 +541,7 @@ function ShopApp({ boutique, onLogout }) {
           </nav>
         </div>
         <div className="p-4 space-y-1">
-          <button onClick={() => exportToExcel(boutique, products, movements, expenses)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full" style={{ color: "#CBD2DE" }}>
-            <Download size={17} /> <span>Exporter (Excel)</span>
-          </button>
+          {renderActions("py-2.5", 17)}
           <button onClick={onLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full" style={{ color: "#8590A3" }}>
             <LogOut size={17} /> <span>Changer de boutique</span>
           </button>
@@ -511,10 +579,7 @@ function ShopApp({ boutique, onLogout }) {
               })}
             </nav>
             <div className="p-4 space-y-1" style={{ borderTop: `1px solid ${NAVY_SOFT}` }}>
-              <button onClick={() => { exportToExcel(boutique, products, movements, expenses); setMobileMenuOpen(false); }}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm w-full" style={{ color: "#CBD2DE" }}>
-                <Download size={18} /> <span>Exporter (Excel)</span>
-              </button>
+              {renderActions("py-3", 18, () => setMobileMenuOpen(false))}
               <button onClick={onLogout} className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm w-full" style={{ color: "#8590A3" }}>
                 <LogOut size={18} /> <span>Changer de boutique</span>
               </button>
@@ -556,6 +621,10 @@ function ShopApp({ boutique, onLogout }) {
         {tab === "stats" && <StatsPage stats={stats} movements={movements} expenses={expenses} title={TITLES.stats} />}
         {tab === "expenses" && <Expenses expenses={expenses} setExpenses={persistExpenses} title={TITLES.expenses} />}
       </div>
+
+      {guideOpen && <GuideModal boutiqueName={boutique.name} onClose={closeGuide} />}
+      {renameOpen && <RenameModal current={boutique.name} onCancel={() => setRenameOpen(false)} onSave={onRename} onDone={() => setRenameOpen(false)} />}
+      {emailOpen && <EmailModal onCancel={() => setEmailOpen(false)} onSend={(email) => sendExportByEmail(boutique, products, movements, expenses, email)} />}
     </div>
   );
 }
@@ -757,13 +826,21 @@ function PageHeader({ title, actionLabel, onAction, secondaryLabel, onSecondary,
 }
 
 // ---------- Tableau de bord ----------
-function StatCard({ label, value, accent }) {
+function StatCard({ label, value, accent, icon: Icon }) {
+  const c = accent || NAVY;
   return (
-    <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-5">
-      <p className="text-xs" style={{ color: MUTED }}>{label}</p>
-      <p className="text-2xl mt-1 font-semibold" style={{ fontFamily: "ui-monospace, monospace", color: accent || TEXT }}>
-        {fmt(value)}
-      </p>
+    <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-5 flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-xs" style={{ color: MUTED }}>{label}</p>
+        <p className="text-2xl mt-1 font-semibold" style={{ fontFamily: "ui-monospace, monospace", color: accent || TEXT }}>
+          {fmt(value)}
+        </p>
+      </div>
+      {Icon && (
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: c + "1A" }}>
+          <Icon size={20} style={{ color: c }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -828,27 +905,27 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
 
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>Situation actuelle</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <StatCard label="Valeur du stock restant" value={stats.valeurStock} />
-        <StatCard label="Caisse — total encaissé (brut)" value={stats.caisseBrute} accent={GREEN} />
-        <StatCard label="Caisse — disponible (net dépenses + réassorts)" value={stats.caisseNette} accent={stats.caisseNette >= 0 ? GREEN : RED} />
+        <StatCard label="Valeur du stock restant" value={stats.valeurStock} icon={Package} />
+        <StatCard label="Caisse — total encaissé (brut)" value={stats.caisseBrute} accent={GREEN} icon={Wallet} />
+        <StatCard label="Caisse — disponible (net dépenses + réassorts)" value={stats.caisseNette} accent={stats.caisseNette >= 0 ? GREEN : RED} icon={Vault} />
       </div>
 
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
         Point du jour — {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <StatCard label="Chiffre d'affaires" value={stats.caJour} />
-        <StatCard label="Dépenses" value={stats.depJour} accent={RED} />
-        <StatCard label="Bénéfice net" value={stats.beneficeJour} accent={stats.beneficeJour >= 0 ? GREEN : RED} />
+        <StatCard label="Chiffre d'affaires" value={stats.caJour} icon={Coins} />
+        <StatCard label="Dépenses" value={stats.depJour} accent={RED} icon={Receipt} />
+        <StatCard label="Bénéfice net" value={stats.beneficeJour} accent={stats.beneficeJour >= 0 ? GREEN : RED} icon={TrendingUp} />
       </div>
 
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
         Point du mois — {new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Chiffre d'affaires" value={stats.caMois} />
-        <StatCard label="Dépenses" value={stats.depMois} accent={RED} />
-        <StatCard label="Bénéfice net" value={stats.beneficeMois} accent={stats.beneficeMois >= 0 ? GREEN : RED} />
+        <StatCard label="Chiffre d'affaires" value={stats.caMois} icon={Coins} />
+        <StatCard label="Dépenses" value={stats.depMois} accent={RED} icon={Receipt} />
+        <StatCard label="Bénéfice net" value={stats.beneficeMois} accent={stats.beneficeMois >= 0 ? GREEN : RED} icon={TrendingUp} />
       </div>
 
       {quickSaleOpen && (
@@ -1828,11 +1905,141 @@ function Expenses({ expenses, setExpenses, title }) {
   );
 }
 
+// ---------- Modales : guide, renommer, supprimer, email ----------
+function ModalShell({ children, wide }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(16,27,46,0.45)" }}>
+      <div style={{ background: CARD, color: TEXT, maxHeight: "90%" }} className={`w-full ${wide ? "max-w-lg" : "max-w-sm"} rounded-xl p-5 overflow-auto`}>{children}</div>
+    </div>
+  );
+}
+
+function GuideModal({ boutiqueName, onClose }) {
+  const steps = [
+    [Package, "1. Ajoute tes produits", "Dans « Produits », crée chaque article avec son prix d'achat, son prix de vente et son stock de départ."],
+    [Repeat, "2. Enregistre entrées et ventes", "Dans « Mouvements », note chaque réassort (entrée) et chaque vente. Le stock se met à jour tout seul."],
+    [ShoppingCart, "3. Mode caisse", "Pour vendre vite : choisis les produits, encaisse, puis imprime ou envoie le reçu."],
+    [Receipt, "4. Note tes dépenses", "Loyer, électricité, transport… Elles sont déduites de ta caisse et de ton bénéfice."],
+    [Vault, "5. Lis ton tableau de bord", "Le coffre-fort montre l'argent réellement disponible (ventes moins dépenses et réassorts). Le portefeuille montre le total encaissé."],
+    [Download, "6. Sauvegarde régulièrement", "Les données restent sur cet appareil et ce navigateur. Exporte en Excel ou envoie-toi le fichier par email chaque semaine."],
+  ];
+  return (
+    <ModalShell wide>
+      <div className="flex items-center gap-2 mb-1">
+        <div style={{ background: "#FFF1E0" }} className="w-9 h-9 rounded-lg flex items-center justify-center"><BookOpen size={18} style={{ color: ORANGE }} /></div>
+        <h3 className="text-base font-semibold">Bienvenue dans {boutiqueName}</h3>
+      </div>
+      <p className="text-sm mb-4" style={{ color: MUTED }}>Le guide en 6 étapes. Tu peux le rouvrir à tout moment depuis le menu.</p>
+      <div className="space-y-3 mb-5">
+        {steps.map(([Icon, t, d]) => (
+          <div key={t} className="flex gap-3">
+            <div style={{ background: "#EEF1F5" }} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"><Icon size={16} style={{ color: NAVY }} /></div>
+            <div><p className="text-sm font-medium">{t}</p><p className="text-xs" style={{ color: MUTED }}>{d}</p></div>
+          </div>
+        ))}
+      </div>
+      <button onClick={onClose} style={{ background: ORANGE, color: "#fff" }} className="w-full rounded-lg py-2 text-sm font-medium">J'ai compris</button>
+    </ModalShell>
+  );
+}
+
+function RenameModal({ current, onCancel, onSave, onDone }) {
+  const [name, setName] = useState(current);
+  const [error, setError] = useState("");
+  const save = async () => {
+    const n = name.trim();
+    if (!n) return setError("Le nom ne peut pas être vide.");
+    if (n === current) return onDone();
+    const err = await onSave(n);
+    if (err) setError(err); else onDone();
+  };
+  return (
+    <ModalShell>
+      <h3 className="text-base font-semibold mb-3">Renommer la boutique</h3>
+      <input autoFocus value={name} onChange={(e) => setName(e.target.value)} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-3 py-2 text-sm" />
+      {error && <p className="text-xs mt-2 flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+      <p className="text-xs mt-2" style={{ color: MUTED }}>Tes données sont conservées, seul le nom change.</p>
+      <div className="flex gap-2 mt-4">
+        <button onClick={onCancel} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
+        <button onClick={save} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">Enregistrer</button>
+      </div>
+    </ModalShell>
+  );
+}
+
+function DeleteBoutiqueModal({ boutique, onCancel, onConfirm }) {
+  const [typed, setTyped] = useState("");
+  const [pin, setPin] = useState("");
+  const nameOk = typed.trim().toLowerCase() === boutique.name.trim().toLowerCase();
+  const pinOk = !boutique.pinHash || simpleHash(pin) === boutique.pinHash;
+  const ok = nameOk && pinOk;
+  return (
+    <ModalShell>
+      <div className="flex items-center gap-2 mb-3">
+        <div style={{ background: "#FDEAEA" }} className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"><AlertCircle size={18} style={{ color: RED }} /></div>
+        <h3 className="text-base font-semibold">Supprimer cette boutique ?</h3>
+      </div>
+      <p className="text-sm mb-3" style={{ color: MUTED }}>
+        Tous les produits, ventes, dépenses et fournisseurs de <strong>{boutique.name}</strong> seront effacés définitivement. Pense à exporter tes données avant.
+      </p>
+      <label className="text-xs" style={{ color: MUTED }}>Pour confirmer, écris le nom de la boutique</label>
+      <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={boutique.name} style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-3 py-2 text-sm mt-1 mb-3" />
+      {boutique.pinHash && (
+        <>
+          <label className="text-xs" style={{ color: MUTED }}>Code d'accès de la boutique</label>
+          <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="••••" style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-3 py-2 text-sm mt-1 mb-3 tracking-widest" />
+        </>
+      )}
+      <div className="flex gap-2 mt-2">
+        <button onClick={onCancel} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
+        <button onClick={onConfirm} disabled={!ok} style={{ background: RED, color: "#fff", opacity: ok ? 1 : 0.4 }} className="flex-1 rounded-lg py-2 text-sm font-medium">Supprimer</button>
+      </div>
+    </ModalShell>
+  );
+}
+
+function EmailModal({ onCancel, onSend }) {
+  const [email, setEmail] = useState(() => { try { return window.localStorage.getItem("gb_export_email") || ""; } catch (e) { return ""; } });
+  const [status, setStatus] = useState("");
+  const [busy, setBusy] = useState(false);
+  const send = async () => {
+    setBusy(true);
+    try { window.localStorage.setItem("gb_export_email", email.trim()); } catch (e) {}
+    const r = await onSend(email.trim());
+    setBusy(false);
+    if (r === "shared") onCancel();
+    else if (r === "mailto") setStatus("Le fichier Excel a été téléchargé et ton application email s'ouvre : ajoute le fichier en pièce jointe, puis envoie.");
+  };
+  return (
+    <ModalShell>
+      <div className="flex items-center gap-2 mb-3">
+        <div style={{ background: "#FFF1E0" }} className="w-9 h-9 rounded-lg flex items-center justify-center"><Mail size={18} style={{ color: ORANGE }} /></div>
+        <h3 className="text-base font-semibold">Envoyer l'export par email</h3>
+      </div>
+      <label className="text-xs" style={{ color: MUTED }}>Adresse email (la tienne ou celle de ton comptable)</label>
+      <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@exemple.com" style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-3 py-2 text-sm mt-1" />
+      <p className="text-xs mt-2" style={{ color: MUTED }}>Sur téléphone, le menu de partage s'ouvre avec le fichier déjà joint (Gmail, WhatsApp…). Sur ordinateur, le fichier est téléchargé puis un brouillon d'email s'ouvre.</p>
+      {status && <p className="text-xs mt-2" style={{ color: GREEN }}>{status}</p>}
+      <div className="flex gap-2 mt-4">
+        <button onClick={onCancel} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">{status ? "Fermer" : "Annuler"}</button>
+        <button onClick={send} disabled={busy} style={{ background: ORANGE, color: "#fff", opacity: busy ? 0.6 : 1 }} className="flex-1 rounded-lg py-2 text-sm font-medium">Envoyer</button>
+      </div>
+    </ModalShell>
+  );
+}
+
 // ---------- Racine ----------
 function App() {
   const [boutique, setBoutique] = useState(null);
+  const rename = async (newName) => {
+    const list = (await storeGet("boutiques_list")) || [];
+    if (list.some((b) => b.id !== boutique.id && b.name.toLowerCase() === newName.toLowerCase())) return "Ce nom de boutique existe déjà.";
+    await storeSet("boutiques_list", list.map((b) => (b.id === boutique.id ? { ...b, name: newName } : b)));
+    setBoutique({ ...boutique, name: newName });
+    return null;
+  };
   if (!boutique) return <LoginScreen onEnter={setBoutique} />;
-  return <ShopApp boutique={boutique} onLogout={() => setBoutique(null)} />;
+  return <ShopApp boutique={boutique} onLogout={() => setBoutique(null)} onRename={rename} />;
 }
 
 
