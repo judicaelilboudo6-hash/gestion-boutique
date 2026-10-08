@@ -123,6 +123,22 @@ const simpleHash = (s) => {
   return h.toString(36);
 };
 
+// ---------- Ventes à crédit ----------
+// Une vente sans champ "credit" est considérée comme entièrement payée.
+const salePaid = (mv) => mv.credit ? mv.credit.payments.reduce((a, p) => a + p.amount, 0) : mv.totalVente;
+const saleDue = (mv) => mv.type === "vente" ? Math.max(0, mv.totalVente - salePaid(mv)) : 0;
+const EMPTY_CREDIT = { on: false, customer: "", deposit: "" };
+const creditError = (c, total) => {
+  if (!c.on) return "";
+  if (!c.customer.trim()) return "Indique le nom du client pour une vente à crédit.";
+  if (+c.deposit < 0) return "L'acompte ne peut pas être négatif.";
+  if (+c.deposit > total) return "L'acompte dépasse le total de la vente.";
+  return "";
+};
+const makeCredit = (c, amountPaid) => c.on
+  ? { customer: c.customer.trim(), payments: amountPaid > 0 ? [{ id: uid(), date: todayStr(), amount: amountPaid }] : [] }
+  : undefined;
+
 function buildExport(boutique, products, movements, expenses) {
   const wb = XLSX.utils.book_new();
 
@@ -142,7 +158,10 @@ function buildExport(boutique, products, movements, expenses) {
     Produit: m.productName,
     Quantité: m.qty,
     "Prix unitaire (FCFA)": m.unitVente,
-    "Total encaissé (FCFA)": m.totalVente,
+    "Total vente (FCFA)": m.totalVente,
+    "Payé (FCFA)": salePaid(m),
+    "Reste à payer (FCFA)": saleDue(m),
+    "Client (crédit)": m.credit ? m.credit.customer : "",
   })));
   XLSX.utils.book_append_sheet(wb, wsVentes, "Ventes");
 
@@ -164,11 +183,12 @@ function buildExport(boutique, products, movements, expenses) {
   XLSX.utils.book_append_sheet(wb, wsExpenses, "Dépenses");
 
   const depensesTotal = expenses.reduce((a, d) => a + d.amount, 0);
-  const caisseBrute = ventes.reduce((a, v) => a + v.totalVente, 0);
+  const caisseBrute = ventes.reduce((a, v) => a + salePaid(v), 0);
   const coutReassortTotal = entrees.reduce((a, e) => a + (e.totalAchat || 0), 0);
   const wsResume = XLSX.utils.json_to_sheet([
     { Indicateur: "Valeur du stock restant (FCFA)", Valeur: products.reduce((a, p) => a + p.stock * p.achat, 0) },
     { Indicateur: "Caisse — total encaissé, brut (FCFA)", Valeur: caisseBrute },
+    { Indicateur: "Créances à recevoir — ventes à crédit (FCFA)", Valeur: ventes.reduce((a, v) => a + saleDue(v), 0) },
     { Indicateur: "Total des dépenses (FCFA)", Valeur: depensesTotal },
     { Indicateur: "Total dépensé en réassorts (FCFA)", Valeur: coutReassortTotal },
     { Indicateur: "Caisse — disponible, net (FCFA)", Valeur: caisseBrute - depensesTotal - coutReassortTotal },
@@ -405,7 +425,8 @@ function ShopApp({ boutique, onLogout, onRename }) {
     // Situation actuelle : valeur du stock restant, et caisse (brute / nette)
     const entrees = movements.filter((mv) => mv.type === "entree");
     const valeurStock = products.reduce((a, p) => a + p.stock * p.achat, 0);
-    const caisseBrute = ventes.reduce((a, v) => a + v.totalVente, 0);
+    const caisseBrute = ventes.reduce((a, v) => a + salePaid(v), 0);
+    const creances = ventes.reduce((a, v) => a + saleDue(v), 0);
     const depensesTotal = expenses.reduce((a, d) => a + d.amount, 0);
     const coutReassortTotal = entrees.reduce((a, e) => a + (e.totalAchat || 0), 0);
     const caisseNette = caisseBrute - depensesTotal - coutReassortTotal;
@@ -441,7 +462,7 @@ function ShopApp({ boutique, onLogout, onRename }) {
       caJour, caMois, depJour, depMois,
       beneficeJour: caJour - coutJour - depJour,
       beneficeMois: caMois - coutMois - depMois,
-      valeurStock, caisseBrute, caisseNette, topProducts, enRupture, stockBas, depensesParCategorie,
+      valeurStock, caisseBrute, caisseNette, creances, topProducts, enRupture, stockBas, depensesParCategorie,
     };
   }, [movements, expenses, products]);
 
@@ -468,6 +489,7 @@ function ShopApp({ boutique, onLogout, onRename }) {
     { id: "dashboard", label: "Tableau de bord", icon: LayoutGrid },
     { id: "catalog", label: "Produits", icon: Package },
     { id: "movements", label: "Mouvements", icon: Repeat },
+    { id: "credits", label: "Crédits", icon: Coins },
     { id: "suppliers", label: "Fournisseurs", icon: Truck },
     { id: "stats", label: "Statistiques", icon: TrendingUp },
     { id: "expenses", label: "Dépenses", icon: Receipt },
@@ -478,6 +500,7 @@ function ShopApp({ boutique, onLogout, onRename }) {
     dashboard: "Tableau de bord",
     catalog: "Gestion des produits",
     movements: "Entrées et ventes",
+    credits: "Ventes à crédit",
     suppliers: "Fournisseurs",
     stats: "Statistiques",
     expenses: "Dépenses",
@@ -618,6 +641,7 @@ function ShopApp({ boutique, onLogout, onRename }) {
         {tab === "movements" && (
           <Movements products={products} setProducts={persistProducts} movements={movements} setMovements={persistMovements} title={TITLES.movements} />
         )}
+        {tab === "credits" && <Credits movements={movements} setMovements={persistMovements} title={TITLES.credits} />}
         {tab === "stats" && <StatsPage stats={stats} movements={movements} expenses={expenses} title={TITLES.stats} />}
         {tab === "expenses" && <Expenses expenses={expenses} setExpenses={persistExpenses} title={TITLES.expenses} />}
       </div>
@@ -635,6 +659,8 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
   const [categoryFilter, setCategoryFilter] = useState("");
   const [cart, setCart] = useState([]); // [{productId, name, price, achat, qty, maxStock}]
   const [receipt, setReceipt] = useState(null);
+  const [credit, setCredit] = useState(EMPTY_CREDIT);
+  const [creditErr, setCreditErr] = useState("");
 
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
 
@@ -669,10 +695,19 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
 
   const checkout = () => {
     if (cart.length === 0) return;
+    const cErr = creditError(credit, total);
+    if (cErr) { setCreditErr(cErr); return; }
+    setCreditErr("");
+    // L'acompte est réparti sur les lignes du panier, dans l'ordre
+    let remaining = credit.on ? (+credit.deposit || 0) : 0;
+    const payByLine = {};
+    cart.forEach((l) => { const pay = Math.min(remaining, l.qty * l.price); payByLine[l.productId] = pay; remaining -= pay; });
+    const paidNow = credit.on ? Math.min(+credit.deposit || 0, total) : total;
     const date = todayStr();
     const newMovements = cart.map((l) => ({
       id: uid(), type: "vente", productId: l.productId, productName: l.name, qty: l.qty, date,
       unitVente: l.price, unitAchat: l.achat, totalVente: l.qty * l.price, totalAchat: l.qty * l.achat,
+      ...(credit.on ? { credit: makeCredit(credit, payByLine[l.productId]) } : {}),
     }));
     setMovements([...newMovements, ...movements]);
     setProducts(products.map((p) => {
@@ -683,10 +718,14 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
     setReceipt({
       items: cart.map((l) => ({ name: l.name, qty: l.qty, price: l.price })),
       total: cart.reduce((a, l) => a + l.qty * l.price, 0),
+      customer: credit.on ? credit.customer.trim() : "",
+      paid: paidNow,
+      due: total - paidNow,
       dateLabel: now.toLocaleDateString("fr-FR"),
       timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     });
     setCart([]);
+    setCredit(EMPTY_CREDIT);
   };
 
   return (
@@ -775,6 +814,8 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
           </div>
 
           <div className="p-4" style={{ borderTop: `1px solid ${LINE}` }}>
+            {cart.length > 0 && <div className="mb-3"><CreditFields value={credit} onChange={setCredit} total={total} /></div>}
+            {creditErr && <p className="text-xs flex items-center gap-1 mb-3" style={{ color: RED }}><AlertCircle size={14} />{creditErr}</p>}
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm" style={{ color: MUTED }}>Total</span>
               <span className="text-xl font-semibold" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(total)}</span>
@@ -791,7 +832,7 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
         <ReceiptModal
           boutiqueName={boutiqueName}
           items={receipt.items}
-          total={receipt.total}
+          total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due}
           dateLabel={receipt.dateLabel}
           timeLabel={receipt.timeLabel}
           onClose={() => setReceipt(null)}
@@ -849,10 +890,11 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
 
-  const confirmQuickSale = (product, qty, price) => {
+  const confirmQuickSale = (product, qty, price, credit) => {
     const mv = {
       id: uid(), type: "vente", productId: product.id, productName: product.name, qty, date: todayStr(),
       unitVente: price, unitAchat: product.achat, totalVente: qty * price, totalAchat: qty * product.achat,
+      ...(credit ? { credit } : {}),
     };
     setMovements([mv, ...movements]);
     setProducts(products.map((p) => p.id === product.id ? { ...p, stock: p.stock - qty } : p));
@@ -860,6 +902,9 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
     setReceipt({
       items: [{ name: product.name, qty, price }],
       total: qty * price,
+      customer: credit ? credit.customer : "",
+      paid: credit ? credit.payments.reduce((a, p) => a + p.amount, 0) : qty * price,
+      due: credit ? qty * price - credit.payments.reduce((a, p) => a + p.amount, 0) : 0,
       dateLabel: now.toLocaleDateString("fr-FR"),
       timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     });
@@ -904,10 +949,11 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
       )}
 
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>Situation actuelle</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-10">
         <StatCard label="Valeur du stock restant" value={stats.valeurStock} icon={Package} />
         <StatCard label="Caisse — total encaissé (brut)" value={stats.caisseBrute} accent={GREEN} icon={Wallet} />
         <StatCard label="Caisse — disponible (net dépenses + réassorts)" value={stats.caisseNette} accent={stats.caisseNette >= 0 ? GREEN : RED} icon={Vault} />
+        <StatCard label="À recevoir (ventes à crédit)" value={stats.creances} accent={ORANGE} icon={Coins} />
       </div>
 
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
@@ -933,7 +979,7 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
       )}
 
       {receipt && (
-        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total}
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due}
           dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} onClose={() => setReceipt(null)} />
       )}
     </div>
@@ -1082,7 +1128,7 @@ function StatsPage({ stats, movements, expenses, title }) {
 }
 
 // ---------- Reçu imprimable ----------
-function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClose }) {
+function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClose, customer, paid, due }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 no-print" style={{ background: "rgba(16,27,46,0.45)" }}>
       <style>{`
@@ -1112,6 +1158,13 @@ function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClos
             <span>Total</span>
             <span>{fmt(total)}</span>
           </div>
+          {due > 0 && (
+            <div className="text-xs space-y-1 mb-3">
+              {customer && <div className="flex justify-between"><span>Client</span><span>{customer}</span></div>}
+              <div className="flex justify-between"><span>Payé</span><span>{fmt(paid)}</span></div>
+              <div className="flex justify-between font-semibold"><span>Reste à payer</span><span>{fmt(due)}</span></div>
+            </div>
+          )}
           <p className="text-center text-xs" style={{ color: MUTED }}>Merci de votre achat !</p>
         </div>
 
@@ -1122,6 +1175,196 @@ function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClos
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ---------- Ventes à crédit : champs du formulaire et onglet de suivi ----------
+function CreditFields({ value, onChange, total }) {
+  const reste = Math.max(0, total - (+value.deposit || 0));
+  return (
+    <div style={{ border: `1px solid ${value.on ? "#FBDFB0" : LINE}`, background: value.on ? "#FFF7ED" : "transparent" }} className="rounded-lg p-3">
+      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <input type="checkbox" checked={value.on} onChange={(e) => onChange({ ...value, on: e.target.checked })} />
+        <span className="font-medium">Vente à crédit</span>
+      </label>
+      {value.on && (
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <div className="col-span-2">
+            <label className="text-xs" style={{ color: MUTED }}>Nom du client</label>
+            <input value={value.customer} onChange={(e) => onChange({ ...value, customer: e.target.value })} placeholder="Ex : Mme Aïcha"
+              style={{ border: `1px solid ${LINE}`, background: CARD }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs" style={{ color: MUTED }}>Acompte versé maintenant (optionnel)</label>
+            <input type="number" value={value.deposit} onChange={(e) => onChange({ ...value, deposit: e.target.value })}
+              style={{ border: `1px solid ${LINE}`, background: CARD }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <p className="col-span-2 text-xs" style={{ color: MUTED }}>
+            Reste à payer : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT, fontWeight: 600 }}>{fmt(reste)}</span>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Credits({ movements, setMovements, title }) {
+  const [payKey, setPayKey] = useState(null);
+  const [amount, setAmount] = useState("");
+  const [error, setError] = useState("");
+
+  const groups = useMemo(() => {
+    const map = {};
+    movements.filter((m) => m.type === "vente" && m.credit).forEach((m) => {
+      const key = m.credit.customer.trim().toLowerCase();
+      if (!map[key]) map[key] = { key, name: m.credit.customer.trim(), sales: [] };
+      map[key].sales.push(m);
+    });
+    return Object.values(map)
+      .map((g) => ({ ...g, due: g.sales.reduce((a, x) => a + saleDue(x), 0) }))
+      .sort((a, b) => b.due - a.due);
+  }, [movements]);
+
+  const debtors = groups.filter((g) => g.due > 0);
+  const settled = groups.filter((g) => g.due <= 0);
+  const totalDue = debtors.reduce((a, g) => a + g.due, 0);
+  const current = groups.find((g) => g.key === payKey);
+
+  const history = movements
+    .filter((m) => m.type === "vente" && m.credit)
+    .flatMap((m) => m.credit.payments.map((p) => ({ ...p, customer: m.credit.customer, product: m.productName })))
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    .slice(0, 15);
+
+  const openPay = (g) => { setPayKey(g.key); setAmount(String(g.due)); setError(""); };
+
+  const confirmPay = () => {
+    const amt = +amount;
+    if (!amt || amt <= 0) return setError("Saisis un montant valide.");
+    if (amt > current.due) return setError(`Le montant dépasse ce que doit le client (${fmt(current.due)}).`);
+    let remaining = amt;
+    const add = {};
+    [...current.sales]
+      .filter((x) => saleDue(x) > 0)
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+      .forEach((x) => {
+        const pay = Math.min(remaining, saleDue(x));
+        if (pay > 0) { add[x.id] = pay; remaining -= pay; }
+      });
+    setMovements(movements.map((m) => add[m.id]
+      ? { ...m, credit: { ...m.credit, payments: [...m.credit.payments, { id: uid(), date: todayStr(), amount: add[m.id] }] } }
+      : m));
+    setPayKey(null);
+  };
+
+  return (
+    <div>
+      <PageHeader title={title} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <StatCard label="Total à recevoir" value={totalDue} accent={ORANGE} icon={Coins} />
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-5">
+          <p className="text-xs" style={{ color: MUTED }}>Clients qui doivent encore payer</p>
+          <p className="text-2xl mt-1 font-semibold" style={{ fontFamily: "ui-monospace, monospace" }}>{debtors.length}</p>
+        </div>
+      </div>
+
+      {debtors.length === 0 ? (
+        <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl p-6 text-center text-sm">
+          <p style={{ color: "#9CA3AF" }}>Aucune vente à crédit en cours.</p>
+          <p className="mt-1 text-xs" style={{ color: MUTED }}>Pour en créer une, coche « Vente à crédit » au moment d'encaisser.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {debtors.map((g) => (
+            <div key={g.key} style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="text-sm font-semibold">{g.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: MUTED }}>Doit : <span style={{ fontFamily: "ui-monospace, monospace", color: ORANGE, fontWeight: 600 }}>{fmt(g.due)}</span></p>
+                </div>
+                <button onClick={() => openPay(g)} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-4 py-2 text-sm font-medium">
+                  Enregistrer un paiement
+                </button>
+              </div>
+              <div className="overflow-x-auto" style={{ borderTop: `1px solid ${LINE}` }}>
+                <table className="w-full text-sm" style={{ minWidth: 420 }}>
+                  <tbody>
+                    {g.sales.filter((x) => saleDue(x) > 0).map((x) => (
+                      <tr key={x.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                        <td className="p-3" style={{ color: MUTED }}>{x.date}</td>
+                        <td className="p-3">{x.qty} × {x.productName}</td>
+                        <td className="p-3 text-right" style={{ fontFamily: "ui-monospace, monospace" }}>
+                          <span style={{ color: MUTED }}>{fmt(salePaid(x))} / {fmt(x.totalVente)}</span>
+                        </td>
+                        <td className="p-3 text-right" style={{ fontFamily: "ui-monospace, monospace", color: ORANGE }}>reste {fmt(saleDue(x))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {settled.length > 0 && (
+        <p className="text-xs mt-5" style={{ color: MUTED }}>Soldés : {settled.map((g) => g.name).join(", ")}</p>
+      )}
+
+      {history.length > 0 && (
+        <div className="mt-10">
+          <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>Derniers paiements reçus</p>
+          <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" style={{ minWidth: 420 }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+                    <th className="p-3 font-normal">Date</th>
+                    <th className="p-3 font-normal">Client</th>
+                    <th className="p-3 font-normal">Pour</th>
+                    <th className="p-3 font-normal">Montant</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((p) => (
+                    <tr key={p.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                      <td className="p-3">{p.date}</td>
+                      <td className="p-3">{p.customer}</td>
+                      <td className="p-3" style={{ color: MUTED }}>{p.product}</td>
+                      <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: GREEN }}>{fmt(p.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {current && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(16,27,46,0.45)" }}>
+          <div style={{ background: CARD }} className="w-full max-w-sm rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold">Paiement de {current.name}</h3>
+              <button onClick={() => setPayKey(null)}><X size={18} style={{ color: MUTED }} /></button>
+            </div>
+            <p className="text-xs mb-3" style={{ color: MUTED }}>
+              Reste dû : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT, fontWeight: 600 }}>{fmt(current.due)}</span>.
+              Le paiement est imputé sur les ventes les plus anciennes d'abord.
+            </p>
+            <label className="text-xs" style={{ color: MUTED }}>Montant reçu</label>
+            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus
+              style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+            {error && <p className="text-xs flex items-center gap-1 mt-2" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setPayKey(null)} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
+              <button onClick={confirmPay} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">Encaisser</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1278,6 +1521,7 @@ function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
     return p ? p.vente : "";
   });
   const [error, setError] = useState("");
+  const [credit, setCredit] = useState(EMPTY_CREDIT);
 
   const product = products.find((p) => p.id === productId);
 
@@ -1291,7 +1535,10 @@ function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
     setError("");
     if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
     if (+qty > product.stock) return setError(`Stock insuffisant (disponible : ${product.stock}).`);
-    onConfirm(product, +qty, +price);
+    const total = +qty * +price;
+    const cErr = creditError(credit, total);
+    if (cErr) return setError(cErr);
+    onConfirm(product, +qty, +price, makeCredit(credit, Math.min(+credit.deposit || 0, total)));
   };
 
   return (
@@ -1326,6 +1573,7 @@ function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
           {product && qty && (
             <p className="text-xs" style={{ color: MUTED }}>Total : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+price || 0))}</span></p>
           )}
+          <CreditFields value={credit} onChange={setCredit} total={(+qty || 0) * (+price || 0)} />
           {error && <p className="text-xs flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
           <div className="flex gap-2 pt-1">
             <button onClick={onClose} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
@@ -1378,10 +1626,11 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
     (categoryFilter ? p.category === categoryFilter : true)
   );
 
-  const confirmQuickSale = (product, qty, price) => {
+  const confirmQuickSale = (product, qty, price, credit) => {
     const mv = {
       id: uid(), type: "vente", productId: product.id, productName: product.name, qty, date: todayStr(),
       unitVente: price, unitAchat: product.achat, totalVente: qty * price, totalAchat: qty * product.achat,
+      ...(credit ? { credit } : {}),
     };
     setMovements([mv, ...movements]);
     setProducts(products.map((p) => p.id === product.id ? { ...p, stock: p.stock - qty } : p));
@@ -1389,6 +1638,9 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
     setReceipt({
       items: [{ name: product.name, qty, price }],
       total: qty * price,
+      customer: credit ? credit.customer : "",
+      paid: credit ? credit.payments.reduce((a, p) => a + p.amount, 0) : qty * price,
+      due: credit ? qty * price - credit.payments.reduce((a, p) => a + p.amount, 0) : 0,
       dateLabel: now.toLocaleDateString("fr-FR"),
       timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     });
@@ -1537,7 +1789,7 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
       )}
 
       {receipt && (
-        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total}
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due}
           dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} onClose={() => setReceipt(null)} />
       )}
     </div>
@@ -1604,6 +1856,7 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
   const [qty, setQty] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [error, setError] = useState("");
+  const [credit, setCredit] = useState(EMPTY_CREDIT);
 
   const product = products.find((p) => p.id === productId);
   const ventes = movements.filter((mv) => mv.type === "vente");
@@ -1619,14 +1872,17 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
     if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
     if (+qty > product.stock) return setError(`Stock insuffisant (disponible : ${product.stock}).`);
     const q = +qty;
+    const cErr = creditError(credit, q * +unitPrice);
+    if (cErr) return setError(cErr);
     const mv = {
       id: uid(), type: "vente", productId, productName: product.name, qty: q, date: todayStr(),
       unitVente: +unitPrice, unitAchat: product.achat,
       totalVente: q * +unitPrice, totalAchat: q * product.achat,
+      ...(credit.on ? { credit: makeCredit(credit, Math.min(+credit.deposit || 0, q * +unitPrice)) } : {}),
     };
     setMovements([mv, ...movements]);
     setProducts(products.map((p) => p.id === productId ? { ...p, stock: p.stock - q } : p));
-    setProductId(""); setQty(""); setUnitPrice(""); setShowForm(false);
+    setProductId(""); setQty(""); setUnitPrice(""); setCredit(EMPTY_CREDIT); setShowForm(false);
   };
 
   return (
@@ -1660,6 +1916,7 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
           {product && qty && (
             <p className="text-xs mt-3" style={{ color: MUTED }}>Total de la vente : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+unitPrice || 0))}</span></p>
           )}
+          <div className="mt-3"><CreditFields value={credit} onChange={setCredit} total={(+qty || 0) * (+unitPrice || 0)} /></div>
           {error && <p className="text-xs flex items-center gap-1 mt-2" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
           <div className="flex gap-2 mt-3">
             <button onClick={submit} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-4 py-1.5 text-sm font-medium">Enregistrer la vente</button>
@@ -1676,7 +1933,7 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
               <th className="p-3 font-normal">Produit</th>
               <th className="p-3 font-normal">Qté</th>
               <th className="p-3 font-normal">Prix unitaire</th>
-              <th className="p-3 font-normal">Total encaissé</th>
+              <th className="p-3 font-normal">Total</th>
               <th className="p-3 font-normal"></th>
             </tr>
           </thead>
@@ -1690,7 +1947,12 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
                 <td className="p-3">{mv.productName}</td>
                 <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{mv.qty}</td>
                 <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(mv.unitVente)}</td>
-                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: GREEN }}>{fmt(mv.totalVente)}</td>
+                <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: GREEN }}>
+                  {fmt(mv.totalVente)}
+                  {saleDue(mv) > 0 && (
+                    <div className="text-xs" style={{ color: ORANGE }}>Crédit {mv.credit.customer} — reste {fmt(saleDue(mv))}</div>
+                  )}
+                </td>
                 <td className="p-3 text-right">
                   <button onClick={() => onRemove(mv)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Annuler"><Trash2 size={14} style={{ color: RED }} /></button>
                 </td>
