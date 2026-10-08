@@ -49,7 +49,7 @@ const {
 } = Recharts;
 
 // Icones integrees directement (aucune dependance externe)
-const ICON_SVGS = {"Store": "<path d=\"M3 9h18l-1.5-5h-15L3 9z\"/><path d=\"M3 9v11h18V9\"/><path d=\"M9 20v-6h6v6\"/>", "Plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "Trash2": "<path d=\"M3 6h18\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"/><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"/>", "ArrowDownCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"8 12 12 16 16 12\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"/>", "ArrowUpCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"16 12 12 8 8 12\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"/>", "LogOut": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/>", "LayoutGrid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "Package": "<path d=\"M16.5 9.4 7.5 4.21\"/><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"/><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"/><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"/>", "Repeat": "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>", "Receipt": "<path d=\"M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2z\"/><line x1=\"8\" y1=\"7\" x2=\"16\" y2=\"7\"/><line x1=\"8\" y1=\"11\" x2=\"16\" y2=\"11\"/>", "AlertCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"/>", "ChevronRight": "<polyline points=\"9 18 15 12 9 6\"/>", "Search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/>", "Pencil": "<path d=\"M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z\"/>", "Zap": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>", "X": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/>", "Download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/>", "Trophy": "<path d=\"M8 21h8\"/><path d=\"M12 17v4\"/><path d=\"M7 4h10v5a5 5 0 0 1-10 0z\"/><path d=\"M17 4h3a2 2 0 0 1-2 4h-1\"/><path d=\"M7 4H4a2 2 0 0 0 2 4h1\"/>", "TrendingUp": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>", "ShoppingCart": "<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>", "Minus": "<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>", "Check": "<polyline points=\"20 6 9 17 4 12\"/>", "Printer": "<polyline points=\"6 9 6 2 18 2 18 9\"/><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"/>", "Truck": "<path d=\"M10 17h4V5H2v12h3\"/><path d=\"M14 9h4l3 3v5h-2\"/><circle cx=\"7.5\" cy=\"17.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"17.5\" r=\"1.5\"/>", "MessageCircle": "<path d=\"M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.94 8.94 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9z\"/>", "ArrowLeft": "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>", "Vault": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"15\" rx=\"2\"/><circle cx=\"12\" cy=\"11.5\" r=\"3.5\"/><path d=\"M12 8v1.5M12 13.5V15M8.5 11.5H10M14 11.5h1.5\"/><path d=\"M7 19v2M17 19v2\"/>", "Wallet": "<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"/><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"/>", "Coins": "<circle cx=\"8\" cy=\"8\" r=\"6\"/><path d=\"M18.09 10.37A6 6 0 1 1 10.34 18\"/><path d=\"M7 6h1v4\"/>", "Mail": "<rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><path d=\"m22 7-10 5L2 7\"/>", "BookOpen": "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>", "Menu": "<line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/>"};
+const ICON_SVGS = {"Store": "<path d=\"M3 9h18l-1.5-5h-15L3 9z\"/><path d=\"M3 9v11h18V9\"/><path d=\"M9 20v-6h6v6\"/>", "Plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "Trash2": "<path d=\"M3 6h18\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"/><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"/>", "ArrowDownCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"8 12 12 16 16 12\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"/>", "ArrowUpCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"16 12 12 8 8 12\"/><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"/>", "LogOut": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline points=\"16 17 21 12 16 7\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/>", "LayoutGrid": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>", "Package": "<path d=\"M16.5 9.4 7.5 4.21\"/><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"/><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"/><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"/>", "Repeat": "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>", "Receipt": "<path d=\"M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2z\"/><line x1=\"8\" y1=\"7\" x2=\"16\" y2=\"7\"/><line x1=\"8\" y1=\"11\" x2=\"16\" y2=\"11\"/>", "AlertCircle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"/>", "ChevronRight": "<polyline points=\"9 18 15 12 9 6\"/>", "Search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/>", "Pencil": "<path d=\"M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z\"/>", "Zap": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>", "X": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/>", "Download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/>", "Trophy": "<path d=\"M8 21h8\"/><path d=\"M12 17v4\"/><path d=\"M7 4h10v5a5 5 0 0 1-10 0z\"/><path d=\"M17 4h3a2 2 0 0 1-2 4h-1\"/><path d=\"M7 4H4a2 2 0 0 0 2 4h1\"/>", "TrendingUp": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>", "ShoppingCart": "<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>", "Minus": "<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>", "Check": "<polyline points=\"20 6 9 17 4 12\"/>", "Printer": "<polyline points=\"6 9 6 2 18 2 18 9\"/><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"/>", "Truck": "<path d=\"M10 17h4V5H2v12h3\"/><path d=\"M14 9h4l3 3v5h-2\"/><circle cx=\"7.5\" cy=\"17.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"17.5\" r=\"1.5\"/>", "MessageCircle": "<path d=\"M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.94 8.94 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9z\"/>", "ArrowLeft": "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>", "Vault": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"15\" rx=\"2\"/><circle cx=\"12\" cy=\"11.5\" r=\"3.5\"/><path d=\"M12 8v1.5M12 13.5V15M8.5 11.5H10M14 11.5h1.5\"/><path d=\"M7 19v2M17 19v2\"/>", "Wallet": "<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"/><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"/>", "Coins": "<circle cx=\"8\" cy=\"8\" r=\"6\"/><path d=\"M18.09 10.37A6 6 0 1 1 10.34 18\"/><path d=\"M7 6h1v4\"/>", "Mail": "<rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><path d=\"m22 7-10 5L2 7\"/>", "BookOpen": "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>", "RotateCcw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>", "Menu": "<line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/>"};
 function makeIcon(name) {
   return function Icon(props) {
     const size = props.size || 24;
@@ -95,6 +95,7 @@ const Menu = __I["Menu"];
 const Vault = __I["Vault"];
 const Wallet = __I["Wallet"];
 const Coins = __I["Coins"];
+const RotateCcw = __I["RotateCcw"];
 const Mail = __I["Mail"];
 const BookOpen = __I["BookOpen"];
 
@@ -125,9 +126,53 @@ const simpleHash = (s) => {
 
 // ---------- Ventes à crédit ----------
 // Une vente sans champ "credit" est considérée comme entièrement payée.
+// Un retour est stocké dans la vente d'origine (mv.returns) : { id, date, qty, refund, cost, restock, cashRefund, reason }.
+// Une vente sans retour est inchangée.
+const saleReturns = (mv) => mv.returns || [];
+const returnedQty = (mv) => saleReturns(mv).reduce((a, r) => a + r.qty, 0);
+const returnedValue = (mv) => saleReturns(mv).reduce((a, r) => a + r.refund, 0);
+const cashRefunded = (mv) => saleReturns(mv).reduce((a, r) => a + r.cashRefund, 0);
+const saleNet = (mv) => mv.totalVente - returnedValue(mv); // valeur de la vente après retours
 const salePaid = (mv) => mv.credit ? mv.credit.payments.reduce((a, p) => a + p.amount, 0) : mv.totalVente;
-const saleDue = (mv) => mv.type === "vente" ? Math.max(0, mv.totalVente - salePaid(mv)) : 0;
+const saleDue = (mv) => mv.type === "vente" ? Math.max(0, saleNet(mv) - salePaid(mv)) : 0;
+const saleCash = (mv) => salePaid(mv) - cashRefunded(mv); // argent réellement resté en caisse
+// Valeur remboursée pour qty unités (le dernier retour solde exactement la vente, sans écart d'arrondi)
+const returnRefundValue = (mv, qty) =>
+  qty >= mv.qty - returnedQty(mv) - 1e-9 ? saleNet(mv) : Math.round(mv.totalVente * qty / mv.qty);
+// Argent à rendre en espèces : seulement ce que le client a payé en trop après ce retour
+const returnCashRefund = (mv, refund) =>
+  Math.max(0, salePaid(mv) - (saleNet(mv) - refund)) - Math.max(0, salePaid(mv) - saleNet(mv));
 const EMPTY_CREDIT = { on: false, customer: "", deposit: "" };
+
+// ---------- Remises (sur la vente ou le panier entier) ----------
+// Une vente sans champ "discount" est comptée sans remise.
+const EMPTY_DISCOUNT = { open: false, mode: "amount", value: "" };
+const discountAmount = (d, subtotal) => {
+  if (!d.open) return 0;
+  const v = +d.value || 0;
+  if (v <= 0) return 0;
+  const raw = d.mode === "percent" ? Math.round(subtotal * v / 100) : v;
+  return Math.min(raw, subtotal);
+};
+const discountError = (d, subtotal) => {
+  if (!d.open) return "";
+  const v = +d.value || 0;
+  if (v < 0) return "La remise ne peut pas être négative.";
+  if (d.mode === "percent" && v > 100) return "Le pourcentage ne peut pas dépasser 100 %.";
+  if (d.mode === "amount" && v > subtotal) return "La remise dépasse le total de la vente.";
+  return "";
+};
+// Répartit la remise sur les lignes au prorata de leur montant (la dernière absorbe l'arrondi)
+const splitDiscount = (lineTotals, discount) => {
+  const subtotal = lineTotals.reduce((a, x) => a + x, 0);
+  if (!discount || subtotal <= 0) return lineTotals.map(() => 0);
+  let left = discount;
+  return lineTotals.map((t, i) => {
+    const part = i === lineTotals.length - 1 ? left : Math.min(left, Math.round(discount * t / subtotal));
+    left -= part;
+    return part;
+  });
+};
 const creditError = (c, total) => {
   if (!c.on) return "";
   if (!c.customer.trim()) return "Indique le nom du client pour une vente à crédit.";
@@ -158,6 +203,9 @@ function buildExport(boutique, products, movements, expenses) {
     Produit: m.productName,
     Quantité: m.qty,
     "Prix unitaire (FCFA)": m.unitVente,
+    "Remise (FCFA)": m.discount || 0,
+    "Retourné (qté)": returnedQty(m),
+    "Remboursé (FCFA)": returnedValue(m),
     "Total vente (FCFA)": m.totalVente,
     "Payé (FCFA)": salePaid(m),
     "Reste à payer (FCFA)": saleDue(m),
@@ -175,6 +223,17 @@ function buildExport(boutique, products, movements, expenses) {
   })));
   XLSX.utils.book_append_sheet(wb, wsEntrees, "Entrées");
 
+  const wsRetours = XLSX.utils.json_to_sheet(ventes.flatMap((v) => saleReturns(v).map((r) => ({
+    Date: r.date,
+    Produit: v.productName,
+    Quantité: r.qty,
+    "Montant remboursé (FCFA)": r.refund,
+    "Rendu en espèces (FCFA)": r.cashRefund,
+    "Remis en stock": r.restock ? "Oui" : "Non",
+    Motif: r.reason || "",
+  }))));
+  XLSX.utils.book_append_sheet(wb, wsRetours, "Retours");
+
   const wsExpenses = XLSX.utils.json_to_sheet(expenses.map((e) => ({
     Date: e.date,
     Libellé: e.label,
@@ -183,12 +242,14 @@ function buildExport(boutique, products, movements, expenses) {
   XLSX.utils.book_append_sheet(wb, wsExpenses, "Dépenses");
 
   const depensesTotal = expenses.reduce((a, d) => a + d.amount, 0);
-  const caisseBrute = ventes.reduce((a, v) => a + salePaid(v), 0);
+  const caisseBrute = ventes.reduce((a, v) => a + saleCash(v), 0);
   const coutReassortTotal = entrees.reduce((a, e) => a + (e.totalAchat || 0), 0);
   const wsResume = XLSX.utils.json_to_sheet([
     { Indicateur: "Valeur du stock restant (FCFA)", Valeur: products.reduce((a, p) => a + p.stock * p.achat, 0) },
     { Indicateur: "Caisse — total encaissé, brut (FCFA)", Valeur: caisseBrute },
     { Indicateur: "Créances à recevoir — ventes à crédit (FCFA)", Valeur: ventes.reduce((a, v) => a + saleDue(v), 0) },
+    { Indicateur: "Remises accordées, total (FCFA)", Valeur: ventes.reduce((a, v) => a + (v.discount || 0), 0) },
+    { Indicateur: "Remboursements rendus en espèces (FCFA)", Valeur: ventes.reduce((a, v) => a + cashRefunded(v), 0) },
     { Indicateur: "Total des dépenses (FCFA)", Valeur: depensesTotal },
     { Indicateur: "Total dépensé en réassorts (FCFA)", Valeur: coutReassortTotal },
     { Indicateur: "Caisse — disponible, net (FCFA)", Valeur: caisseBrute - depensesTotal - coutReassortTotal },
@@ -415,17 +476,22 @@ function ShopApp({ boutique, onLogout, onRename }) {
     const t = todayStr(), m = monthStr();
     const ventes = movements.filter((mv) => mv.type === "vente");
     const sum = (arr, pred, field) => arr.filter(pred).reduce((a, x) => a + x[field], 0);
-    const caJour = sum(ventes, (v) => v.date === t, "totalVente");
-    const caMois = sum(ventes, (v) => v.date.slice(0, 7) === m, "totalVente");
-    const coutJour = sum(ventes, (v) => v.date === t, "totalAchat");
-    const coutMois = sum(ventes, (v) => v.date.slice(0, 7) === m, "totalAchat");
+    // Les retours sont déduits à la date du retour (chiffre d'affaires et coût des marchandises)
+    const retours = ventes.flatMap((v) => saleReturns(v));
+    const sumR = (pred, field) => retours.filter(pred).reduce((a, r) => a + r[field], 0);
+    const caJour = sum(ventes, (v) => v.date === t, "totalVente") - sumR((r) => r.date === t, "refund");
+    const caMois = sum(ventes, (v) => v.date.slice(0, 7) === m, "totalVente") - sumR((r) => r.date.slice(0, 7) === m, "refund");
+    const coutJour = sum(ventes, (v) => v.date === t, "totalAchat") - sumR((r) => r.date === t, "cost");
+    const coutMois = sum(ventes, (v) => v.date.slice(0, 7) === m, "totalAchat") - sumR((r) => r.date.slice(0, 7) === m, "cost");
     const depJour = sum(expenses, (d) => d.date === t, "amount");
     const depMois = sum(expenses, (d) => d.date.slice(0, 7) === m, "amount");
+    const remisesJour = ventes.filter((v) => v.date === t).reduce((a, v) => a + (v.discount || 0), 0);
+    const remisesMois = ventes.filter((v) => v.date.slice(0, 7) === m).reduce((a, v) => a + (v.discount || 0), 0);
 
     // Situation actuelle : valeur du stock restant, et caisse (brute / nette)
     const entrees = movements.filter((mv) => mv.type === "entree");
     const valeurStock = products.reduce((a, p) => a + p.stock * p.achat, 0);
-    const caisseBrute = ventes.reduce((a, v) => a + salePaid(v), 0);
+    const caisseBrute = ventes.reduce((a, v) => a + saleCash(v), 0);
     const creances = ventes.reduce((a, v) => a + saleDue(v), 0);
     const depensesTotal = expenses.reduce((a, d) => a + d.amount, 0);
     const coutReassortTotal = entrees.reduce((a, e) => a + (e.totalAchat || 0), 0);
@@ -435,9 +501,9 @@ function ShopApp({ boutique, onLogout, onRename }) {
     const parProduit = {};
     ventes.forEach((v) => {
       if (!parProduit[v.productId]) parProduit[v.productId] = { productId: v.productId, name: v.productName, qty: 0, revenue: 0, cost: 0 };
-      parProduit[v.productId].qty += v.qty;
-      parProduit[v.productId].revenue += v.totalVente;
-      parProduit[v.productId].cost += v.totalAchat;
+      parProduit[v.productId].qty += v.qty - returnedQty(v);
+      parProduit[v.productId].revenue += saleNet(v);
+      parProduit[v.productId].cost += v.totalAchat - saleReturns(v).reduce((a, r) => a + r.cost, 0);
     });
     const topProducts = Object.values(parProduit)
       .map((p) => ({ ...p, profit: p.revenue - p.cost }))
@@ -459,7 +525,7 @@ function ShopApp({ boutique, onLogout, onRename }) {
       .sort((a, b) => b.total - a.total);
 
     return {
-      caJour, caMois, depJour, depMois,
+      caJour, caMois, depJour, depMois, remisesJour, remisesMois,
       beneficeJour: caJour - coutJour - depJour,
       beneficeMois: caMois - coutMois - depMois,
       valeurStock, caisseBrute, caisseNette, creances, topProducts, enRupture, stockBas, depensesParCategorie,
@@ -639,7 +705,7 @@ function ShopApp({ boutique, onLogout, onRename }) {
           <Suppliers suppliers={suppliers} setSuppliers={persistSuppliers} products={products} title={TITLES.suppliers} />
         )}
         {tab === "movements" && (
-          <Movements products={products} setProducts={persistProducts} movements={movements} setMovements={persistMovements} title={TITLES.movements} />
+          <Movements products={products} setProducts={persistProducts} movements={movements} setMovements={persistMovements} title={TITLES.movements} boutiqueName={boutique.name} />
         )}
         {tab === "credits" && <Credits movements={movements} setMovements={persistMovements} title={TITLES.credits} />}
         {tab === "stats" && <StatsPage stats={stats} movements={movements} expenses={expenses} title={TITLES.stats} />}
@@ -660,6 +726,7 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
   const [cart, setCart] = useState([]); // [{productId, name, price, achat, qty, maxStock}]
   const [receipt, setReceipt] = useState(null);
   const [credit, setCredit] = useState(EMPTY_CREDIT);
+  const [discount, setDiscount] = useState(EMPTY_DISCOUNT);
   const [creditErr, setCreditErr] = useState("");
 
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
@@ -692,21 +759,29 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
   const removeLine = (productId) => setCart((c) => c.filter((l) => l.productId !== productId));
 
   const total = cart.reduce((a, l) => a + l.qty * l.price, 0);
+  const cartCost = cart.reduce((a, l) => a + l.qty * l.achat, 0);
+  const discountValue = discountAmount(discount, total);
+  const netTotal = total - discountValue;
 
   const checkout = () => {
     if (cart.length === 0) return;
-    const cErr = creditError(credit, total);
+    const dErr = discountError(discount, total);
+    if (dErr) { setCreditErr(dErr); return; }
+    const cErr = creditError(credit, netTotal);
     if (cErr) { setCreditErr(cErr); return; }
     setCreditErr("");
-    // L'acompte est réparti sur les lignes du panier, dans l'ordre
+    // La remise est répartie sur les lignes au prorata, puis l'acompte dans l'ordre des lignes
+    const parts = splitDiscount(cart.map((l) => l.qty * l.price), discountValue);
+    const lineNet = cart.map((l, i) => l.qty * l.price - parts[i]);
     let remaining = credit.on ? (+credit.deposit || 0) : 0;
     const payByLine = {};
-    cart.forEach((l) => { const pay = Math.min(remaining, l.qty * l.price); payByLine[l.productId] = pay; remaining -= pay; });
-    const paidNow = credit.on ? Math.min(+credit.deposit || 0, total) : total;
+    cart.forEach((l, i) => { const pay = Math.min(remaining, lineNet[i]); payByLine[l.productId] = pay; remaining -= pay; });
+    const paidNow = credit.on ? Math.min(+credit.deposit || 0, netTotal) : netTotal;
     const date = todayStr();
-    const newMovements = cart.map((l) => ({
+    const newMovements = cart.map((l, i) => ({
       id: uid(), type: "vente", productId: l.productId, productName: l.name, qty: l.qty, date,
-      unitVente: l.price, unitAchat: l.achat, totalVente: l.qty * l.price, totalAchat: l.qty * l.achat,
+      unitVente: l.price, unitAchat: l.achat, totalVente: lineNet[i], totalAchat: l.qty * l.achat,
+      ...(parts[i] > 0 ? { discount: parts[i] } : {}),
       ...(credit.on ? { credit: makeCredit(credit, payByLine[l.productId]) } : {}),
     }));
     setMovements([...newMovements, ...movements]);
@@ -717,15 +792,17 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
     const now = new Date();
     setReceipt({
       items: cart.map((l) => ({ name: l.name, qty: l.qty, price: l.price })),
-      total: cart.reduce((a, l) => a + l.qty * l.price, 0),
+      total: netTotal,
+      discount: discountValue,
       customer: credit.on ? credit.customer.trim() : "",
       paid: paidNow,
-      due: total - paidNow,
+      due: netTotal - paidNow,
       dateLabel: now.toLocaleDateString("fr-FR"),
       timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     });
     setCart([]);
     setCredit(EMPTY_CREDIT);
+    setDiscount(EMPTY_DISCOUNT);
   };
 
   return (
@@ -814,11 +891,12 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
           </div>
 
           <div className="p-4" style={{ borderTop: `1px solid ${LINE}` }}>
-            {cart.length > 0 && <div className="mb-3"><CreditFields value={credit} onChange={setCredit} total={total} /></div>}
+            {cart.length > 0 && <div className="mb-3"><DiscountFields value={discount} onChange={setDiscount} subtotal={total} cost={cartCost} /></div>}
+            {cart.length > 0 && <div className="mb-3"><CreditFields value={credit} onChange={setCredit} total={netTotal} /></div>}
             {creditErr && <p className="text-xs flex items-center gap-1 mb-3" style={{ color: RED }}><AlertCircle size={14} />{creditErr}</p>}
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm" style={{ color: MUTED }}>Total</span>
-              <span className="text-xl font-semibold" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(total)}</span>
+              <span className="text-xl font-semibold" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(netTotal)}</span>
             </div>
             <button onClick={checkout} disabled={cart.length === 0} style={{ background: ORANGE, color: "#fff" }}
               className="w-full rounded-lg py-3 text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40">
@@ -832,7 +910,7 @@ function CaisseMode({ boutiqueName, products, movements, setProducts, setMovemen
         <ReceiptModal
           boutiqueName={boutiqueName}
           items={receipt.items}
-          total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due}
+          total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due} discount={receipt.discount}
           dateLabel={receipt.dateLabel}
           timeLabel={receipt.timeLabel}
           onClose={() => setReceipt(null)}
@@ -890,10 +968,11 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
 
-  const confirmQuickSale = (product, qty, price, credit) => {
+  const confirmQuickSale = (product, qty, price, credit, disc = 0) => {
     const mv = {
       id: uid(), type: "vente", productId: product.id, productName: product.name, qty, date: todayStr(),
-      unitVente: price, unitAchat: product.achat, totalVente: qty * price, totalAchat: qty * product.achat,
+      unitVente: price, unitAchat: product.achat, totalVente: qty * price - disc, totalAchat: qty * product.achat,
+      ...(disc > 0 ? { discount: disc } : {}),
       ...(credit ? { credit } : {}),
     };
     setMovements([mv, ...movements]);
@@ -901,10 +980,11 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
     const now = new Date();
     setReceipt({
       items: [{ name: product.name, qty, price }],
-      total: qty * price,
+      total: qty * price - disc,
+      discount: disc,
       customer: credit ? credit.customer : "",
-      paid: credit ? credit.payments.reduce((a, p) => a + p.amount, 0) : qty * price,
-      due: credit ? qty * price - credit.payments.reduce((a, p) => a + p.amount, 0) : 0,
+      paid: credit ? credit.payments.reduce((a, p) => a + p.amount, 0) : qty * price - disc,
+      due: credit ? qty * price - disc - credit.payments.reduce((a, p) => a + p.amount, 0) : 0,
       dateLabel: now.toLocaleDateString("fr-FR"),
       timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     });
@@ -959,19 +1039,21 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
         Point du jour — {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-10">
         <StatCard label="Chiffre d'affaires" value={stats.caJour} icon={Coins} />
         <StatCard label="Dépenses" value={stats.depJour} accent={RED} icon={Receipt} />
         <StatCard label="Bénéfice net" value={stats.beneficeJour} accent={stats.beneficeJour >= 0 ? GREEN : RED} icon={TrendingUp} />
+        <StatCard label="Remises accordées" value={stats.remisesJour} accent={ORANGE} icon={Coins} />
       </div>
 
       <p className="text-sm mb-3 font-medium" style={{ color: MUTED }}>
         Point du mois — {new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard label="Chiffre d'affaires" value={stats.caMois} icon={Coins} />
         <StatCard label="Dépenses" value={stats.depMois} accent={RED} icon={Receipt} />
         <StatCard label="Bénéfice net" value={stats.beneficeMois} accent={stats.beneficeMois >= 0 ? GREEN : RED} icon={TrendingUp} />
+        <StatCard label="Remises accordées" value={stats.remisesMois} accent={ORANGE} icon={Coins} />
       </div>
 
       {quickSaleOpen && (
@@ -979,7 +1061,7 @@ function Dashboard({ stats, title, products, movements, setProducts, setMovement
       )}
 
       {receipt && (
-        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due}
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due} discount={receipt.discount}
           dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} onClose={() => setReceipt(null)} />
       )}
     </div>
@@ -998,8 +1080,9 @@ function StatsPage({ stats, movements, expenses, title }) {
       const dateStr = d.toISOString().slice(0, 10);
       const label = d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
       const ventesJour = movements.filter((m) => m.type === "vente" && m.date === dateStr);
-      const ca = ventesJour.reduce((a, v) => a + v.totalVente, 0);
-      const cout = ventesJour.reduce((a, v) => a + v.totalAchat, 0);
+      const retoursJour = movements.filter((m) => m.type === "vente").flatMap((v) => saleReturns(v)).filter((r) => r.date === dateStr);
+      const ca = ventesJour.reduce((a, v) => a + v.totalVente, 0) - retoursJour.reduce((a, r) => a + r.refund, 0);
+      const cout = ventesJour.reduce((a, v) => a + v.totalAchat, 0) - retoursJour.reduce((a, r) => a + r.cost, 0);
       const dep = expenses.filter((e) => e.date === dateStr).reduce((a, e) => a + e.amount, 0);
       days.push({ date: dateStr, label, ca, benefice: ca - cout - dep });
     }
@@ -1128,7 +1211,7 @@ function StatsPage({ stats, movements, expenses, title }) {
 }
 
 // ---------- Reçu imprimable ----------
-function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClose, customer, paid, due }) {
+function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClose, customer, paid, due, discount, title, totalLabel, footer, extra }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 no-print" style={{ background: "rgba(16,27,46,0.45)" }}>
       <style>{`
@@ -1143,7 +1226,7 @@ function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClos
         <div className="receipt-print p-5" style={{ fontFamily: "ui-monospace, monospace" }}>
           <div className="text-center mb-3">
             <p className="text-sm font-semibold" style={{ color: TEXT }}>{boutiqueName}</p>
-            <p className="text-xs" style={{ color: MUTED }}>Reçu de vente</p>
+            <p className="text-xs" style={{ color: MUTED }}>{title || "Reçu de vente"}</p>
             <p className="text-xs" style={{ color: MUTED }}>{dateLabel} — {timeLabel}</p>
           </div>
           <div style={{ borderTop: `1px dashed ${LINE}`, borderBottom: `1px dashed ${LINE}` }} className="py-2 my-2 space-y-1.5">
@@ -1154,10 +1237,23 @@ function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClos
               </div>
             ))}
           </div>
+          {discount > 0 && (
+            <div className="text-xs space-y-1 mb-2">
+              <div className="flex justify-between"><span>Sous-total</span><span>{fmt(total + discount)}</span></div>
+              <div className="flex justify-between"><span>Remise</span><span>− {fmt(discount)}</span></div>
+            </div>
+          )}
           <div className="flex justify-between text-sm font-semibold mb-3">
-            <span>Total</span>
+            <span>{totalLabel || "Total"}</span>
             <span>{fmt(total)}</span>
           </div>
+          {extra && extra.length > 0 && (
+            <div className="text-xs space-y-1 mb-3">
+              {extra.map(([label, val], i) => (
+                <div key={i} className="flex justify-between"><span>{label}</span><span>{val}</span></div>
+              ))}
+            </div>
+          )}
           {due > 0 && (
             <div className="text-xs space-y-1 mb-3">
               {customer && <div className="flex justify-between"><span>Client</span><span>{customer}</span></div>}
@@ -1165,7 +1261,7 @@ function ReceiptModal({ boutiqueName, items, total, dateLabel, timeLabel, onClos
               <div className="flex justify-between font-semibold"><span>Reste à payer</span><span>{fmt(due)}</span></div>
             </div>
           )}
-          <p className="text-center text-xs" style={{ color: MUTED }}>Merci de votre achat !</p>
+          <p className="text-center text-xs" style={{ color: MUTED }}>{footer || "Merci de votre achat !"}</p>
         </div>
 
         <div className="no-print-inner flex gap-2 p-4" style={{ borderTop: `1px solid ${LINE}` }}>
@@ -1204,6 +1300,179 @@ function CreditFields({ value, onChange, total }) {
             Reste à payer : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT, fontWeight: 600 }}>{fmt(reste)}</span>
           </p>
         </div>
+      )}
+    </div>
+  );
+}
+
+function ReturnModal({ sale, onClose, onConfirm }) {
+  const remaining = sale.qty - returnedQty(sale);
+  const [qty, setQty] = useState("1");
+  const [restock, setRestock] = useState(true);
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const q = +qty || 0;
+  const valid = q > 0 && q <= remaining + 1e-9;
+  const refund = valid ? returnRefundValue(sale, q) : 0;
+  const cash = valid ? returnCashRefund(sale, refund) : 0;
+  const debt = refund - cash;
+  const impact = refund - (restock ? q * sale.unitAchat : 0);
+  const mono = { fontFamily: "ui-monospace, monospace" };
+
+  const confirm = () => {
+    if (!valid) return setError(`Quantité invalide (maximum ${remaining}).`);
+    onConfirm({ id: uid(), date: todayStr(), qty: q, refund, cost: restock ? q * sale.unitAchat : 0, restock, cashRefund: cash, reason: reason.trim() });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(16,27,46,0.45)" }}>
+      <div style={{ background: CARD }} className="w-full max-w-sm rounded-xl p-5 max-h-full overflow-auto">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <RotateCcw size={17} style={{ color: ORANGE }} />
+            <h3 className="text-base font-semibold">Retour d'un client</h3>
+          </div>
+          <button onClick={onClose}><X size={18} style={{ color: MUTED }} /></button>
+        </div>
+        <div className="text-xs mb-4 space-y-0.5" style={{ color: MUTED }}>
+          <p><span style={{ color: TEXT, fontWeight: 600 }}>{sale.productName}</span> — vendu le {sale.date}{sale.credit ? ` à ${sale.credit.customer}` : ""}</p>
+          <p>Vendu : {sale.qty} · déjà retourné : {returnedQty(sale)} · retournable : {remaining}</p>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Quantité retournée</label>
+            <input type="number" value={qty} onChange={(e) => setQty(e.target.value)} autoFocus
+              style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+          <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+            <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} className="mt-1" />
+            <span>Remettre les articles en stock
+              <span className="block text-xs" style={{ color: MUTED }}>Décoche si l'article est abîmé : il ne sera pas remis en vente.</span>
+            </span>
+          </label>
+          <div>
+            <label className="text-xs" style={{ color: MUTED }}>Motif (optionnel)</label>
+            <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Ex : défectueux, mauvaise taille"
+              style={{ border: `1px solid ${LINE}` }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-1" />
+          </div>
+
+          {valid && (
+            <div style={{ background: "#FFF7ED", border: "1px solid #FBDFB0" }} className="rounded-lg p-3 text-xs space-y-1">
+              <div className="flex justify-between"><span>Valeur du retour</span><span style={mono}>{fmt(refund)}</span></div>
+              {cash > 0 && <div className="flex justify-between font-semibold" style={{ color: TEXT }}><span>À rendre au client en espèces</span><span style={mono}>{fmt(cash)}</span></div>}
+              {debt > 0 && <div className="flex justify-between"><span>Déduit de ce que le client doit</span><span style={mono}>{fmt(debt)}</span></div>}
+              <div className="flex justify-between" style={{ color: MUTED }}><span>Effet sur le bénéfice</span><span style={mono}>{impact >= 0 ? "−" : "+"} {fmt(Math.abs(impact))}</span></div>
+            </div>
+          )}
+          {error && <p className="text-xs flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
+            <button onClick={confirm} style={{ background: ORANGE, color: "#fff" }} className="flex-1 rounded-lg py-2 text-sm font-medium">Enregistrer le retour</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReturnsPanel({ movements, onUndo }) {
+  const rows = movements
+    .filter((m) => m.type === "vente")
+    .flatMap((m) => saleReturns(m).map((r) => ({ sale: m, ret: r })))
+    .sort((a, b) => (a.ret.date < b.ret.date ? 1 : a.ret.date > b.ret.date ? -1 : 0));
+  const mono = { fontFamily: "ui-monospace, monospace" };
+  return (
+    <div>
+      <p className="text-xs mb-4" style={{ color: MUTED }}>
+        Pour enregistrer un retour, ouvre l'onglet Ventes et touche l'icône de retour sur la vente concernée.
+      </p>
+      <div style={{ background: CARD, border: `1px solid ${LINE}` }} className="rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" style={{ minWidth: 640 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${LINE}`, color: MUTED }} className="text-left">
+                <th className="p-3 font-normal">Date</th>
+                <th className="p-3 font-normal">Produit</th>
+                <th className="p-3 font-normal">Qté</th>
+                <th className="p-3 font-normal">Remboursé</th>
+                <th className="p-3 font-normal">Espèces rendues</th>
+                <th className="p-3 font-normal">Stock</th>
+                <th className="p-3 font-normal">Motif</th>
+                <th className="p-3 font-normal"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr><td colSpan={8} className="p-4 text-center text-sm" style={{ color: "#9CA3AF" }}>Aucun retour enregistré.</td></tr>
+              )}
+              {rows.map(({ sale, ret }) => (
+                <tr key={ret.id} style={{ borderTop: `1px solid ${LINE}` }}>
+                  <td className="p-3">{ret.date}</td>
+                  <td className="p-3">{sale.productName}</td>
+                  <td className="p-3" style={mono}>{ret.qty}</td>
+                  <td className="p-3" style={{ ...mono, color: RED }}>− {fmt(ret.refund)}</td>
+                  <td className="p-3" style={mono}>{ret.cashRefund > 0 ? fmt(ret.cashRefund) : "—"}</td>
+                  <td className="p-3">
+                    {ret.restock
+                      ? <span style={{ background: "#E9F7EF", color: GREEN }} className="text-xs rounded-full px-2 py-0.5">Remis</span>
+                      : <span style={{ background: "#FFF1E0", color: ORANGE }} className="text-xs rounded-full px-2 py-0.5">Non remis</span>}
+                  </td>
+                  <td className="p-3" style={{ color: MUTED }}>{ret.reason || "—"}</td>
+                  <td className="p-3 text-right">
+                    <button onClick={() => onUndo(sale, ret)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Annuler ce retour"><Trash2 size={14} style={{ color: RED }} /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiscountFields({ value, onChange, subtotal, cost }) {
+  if (!value.open) {
+    return (
+      <button type="button" onClick={() => onChange({ ...EMPTY_DISCOUNT, open: true })}
+        className="text-sm font-medium" style={{ color: ORANGE }}>
+        + Ajouter une remise
+      </button>
+    );
+  }
+  const d = discountAmount(value, subtotal);
+  const after = subtotal - d;
+  const mono = { fontFamily: "ui-monospace, monospace" };
+  return (
+    <div style={{ border: `1px solid ${LINE}` }} className="rounded-lg p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium">Remise</span>
+        <div className="flex items-center gap-1">
+          {[["amount", "FCFA"], ["percent", "%"]].map(([m, l]) => (
+            <button key={m} type="button" onClick={() => onChange({ ...value, mode: m })}
+              className="rounded-md px-2.5 py-1 text-xs font-medium"
+              style={{ background: value.mode === m ? NAVY : CARD, color: value.mode === m ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>{l}</button>
+          ))}
+          <button type="button" onClick={() => onChange(EMPTY_DISCOUNT)} aria-label="Retirer la remise" className="ml-1">
+            <X size={16} style={{ color: MUTED }} />
+          </button>
+        </div>
+      </div>
+      <input type="number" value={value.value} onChange={(e) => onChange({ ...value, value: e.target.value })}
+        placeholder={value.mode === "percent" ? "Ex : 10" : "Ex : 500"}
+        style={{ border: `1px solid ${LINE}`, background: CARD }} className="w-full rounded-lg px-2 py-1.5 text-sm mt-2" />
+      {d > 0 && (
+        <div className="text-xs mt-2 space-y-0.5" style={{ color: MUTED }}>
+          <div className="flex justify-between"><span>Sous-total</span><span style={mono}>{fmt(subtotal)}</span></div>
+          <div className="flex justify-between"><span>Remise</span><span style={{ ...mono, color: ORANGE }}>− {fmt(d)}</span></div>
+          <div className="flex justify-between font-semibold" style={{ color: TEXT }}><span>Nouveau total</span><span style={mono}>{fmt(after)}</span></div>
+        </div>
+      )}
+      {d > 0 && cost > after && (
+        <p className="text-xs flex items-center gap-1 mt-2" style={{ color: RED }}>
+          <AlertCircle size={14} />Attention : vente sous le prix d'achat (perte de {fmt(cost - after)}).
+        </p>
       )}
     </div>
   );
@@ -1296,7 +1565,7 @@ function Credits({ movements, setMovements, title }) {
                         <td className="p-3" style={{ color: MUTED }}>{x.date}</td>
                         <td className="p-3">{x.qty} × {x.productName}</td>
                         <td className="p-3 text-right" style={{ fontFamily: "ui-monospace, monospace" }}>
-                          <span style={{ color: MUTED }}>{fmt(salePaid(x))} / {fmt(x.totalVente)}</span>
+                          <span style={{ color: MUTED }}>{fmt(salePaid(x))} / {fmt(saleNet(x))}</span>
                         </td>
                         <td className="p-3 text-right" style={{ fontFamily: "ui-monospace, monospace", color: ORANGE }}>reste {fmt(saleDue(x))}</td>
                       </tr>
@@ -1522,8 +1791,11 @@ function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
   });
   const [error, setError] = useState("");
   const [credit, setCredit] = useState(EMPTY_CREDIT);
+  const [discount, setDiscount] = useState(EMPTY_DISCOUNT);
 
   const product = products.find((p) => p.id === productId);
+  const subtotalQ = (+qty || 0) * (+price || 0);
+  const netQ = subtotalQ - discountAmount(discount, subtotalQ);
 
   const onSelect = (id) => {
     setProductId(id);
@@ -1535,10 +1807,14 @@ function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
     setError("");
     if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
     if (+qty > product.stock) return setError(`Stock insuffisant (disponible : ${product.stock}).`);
-    const total = +qty * +price;
-    const cErr = creditError(credit, total);
+    const subtotal = +qty * +price;
+    const dErr = discountError(discount, subtotal);
+    if (dErr) return setError(dErr);
+    const disc = discountAmount(discount, subtotal);
+    const net = subtotal - disc;
+    const cErr = creditError(credit, net);
     if (cErr) return setError(cErr);
-    onConfirm(product, +qty, +price, makeCredit(credit, Math.min(+credit.deposit || 0, total)));
+    onConfirm(product, +qty, +price, makeCredit(credit, Math.min(+credit.deposit || 0, net)), disc);
   };
 
   return (
@@ -1573,7 +1849,8 @@ function QuickSaleModal({ products, presetId, onClose, onConfirm }) {
           {product && qty && (
             <p className="text-xs" style={{ color: MUTED }}>Total : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+price || 0))}</span></p>
           )}
-          <CreditFields value={credit} onChange={setCredit} total={(+qty || 0) * (+price || 0)} />
+          <DiscountFields value={discount} onChange={setDiscount} subtotal={subtotalQ} cost={product ? (+qty || 0) * product.achat : 0} />
+          <CreditFields value={credit} onChange={setCredit} total={netQ} />
           {error && <p className="text-xs flex items-center gap-1" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
           <div className="flex gap-2 pt-1">
             <button onClick={onClose} style={{ border: `1px solid ${LINE}` }} className="flex-1 rounded-lg py-2 text-sm">Annuler</button>
@@ -1626,10 +1903,11 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
     (categoryFilter ? p.category === categoryFilter : true)
   );
 
-  const confirmQuickSale = (product, qty, price, credit) => {
+  const confirmQuickSale = (product, qty, price, credit, disc = 0) => {
     const mv = {
       id: uid(), type: "vente", productId: product.id, productName: product.name, qty, date: todayStr(),
-      unitVente: price, unitAchat: product.achat, totalVente: qty * price, totalAchat: qty * product.achat,
+      unitVente: price, unitAchat: product.achat, totalVente: qty * price - disc, totalAchat: qty * product.achat,
+      ...(disc > 0 ? { discount: disc } : {}),
       ...(credit ? { credit } : {}),
     };
     setMovements([mv, ...movements]);
@@ -1637,10 +1915,11 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
     const now = new Date();
     setReceipt({
       items: [{ name: product.name, qty, price }],
-      total: qty * price,
+      total: qty * price - disc,
+      discount: disc,
       customer: credit ? credit.customer : "",
-      paid: credit ? credit.payments.reduce((a, p) => a + p.amount, 0) : qty * price,
-      due: credit ? qty * price - credit.payments.reduce((a, p) => a + p.amount, 0) : 0,
+      paid: credit ? credit.payments.reduce((a, p) => a + p.amount, 0) : qty * price - disc,
+      due: credit ? qty * price - disc - credit.payments.reduce((a, p) => a + p.amount, 0) : 0,
       dateLabel: now.toLocaleDateString("fr-FR"),
       timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     });
@@ -1789,7 +2068,7 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
       )}
 
       {receipt && (
-        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due}
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total} customer={receipt.customer} paid={receipt.paid} due={receipt.due} discount={receipt.discount}
           dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} onClose={() => setReceipt(null)} />
       )}
     </div>
@@ -1797,13 +2076,44 @@ function Catalog({ products, setProducts, movements, setMovements, title, boutiq
 }
 
 // ---------- Mouvements : Ventes et Entrées séparées, chacune avec son propre environnement ----------
-function Movements({ products, setProducts, movements, setMovements, title }) {
+function Movements({ products, setProducts, movements, setMovements, title, boutiqueName }) {
   const [subTab, setSubTab] = useState("vente");
   const [pendingRemove, setPendingRemove] = useState(null);
+  const [returnSale, setReturnSale] = useState(null);
+  const [undoRet, setUndoRet] = useState(null);
+  const [receipt, setReceipt] = useState(null);
 
+  // Annuler une vente remet en stock ce qui n'est pas déjà revenu par un retour
   const removeMovement = (mv) => {
     setMovements(movements.filter((m) => m.id !== mv.id));
-    setProducts(products.map((p) => p.id === mv.productId ? { ...p, stock: p.stock + (mv.type === "entree" ? -mv.qty : mv.qty) } : p));
+    setProducts(products.map((p) => p.id === mv.productId ? { ...p, stock: p.stock + (mv.type === "entree" ? -mv.qty : mv.qty - returnedQty(mv)) } : p));
+  };
+
+  const confirmReturn = (data) => {
+    const sale = returnSale;
+    setMovements(movements.map((m) => m.id === sale.id ? { ...m, returns: [...saleReturns(m), data] } : m));
+    if (data.restock) setProducts(products.map((p) => p.id === sale.productId ? { ...p, stock: p.stock + data.qty } : p));
+    const debt = data.refund - data.cashRefund;
+    const now = new Date();
+    setReceipt({
+      items: [{ name: sale.productName, qty: data.qty, price: data.refund / data.qty }],
+      total: data.refund,
+      extra: [
+        ...(sale.credit ? [["Client", sale.credit.customer]] : []),
+        ...(data.cashRefund > 0 ? [["Rendu en espèces", fmt(data.cashRefund)]] : []),
+        ...(debt > 0 ? [["Déduit de la dette", fmt(debt)]] : []),
+      ],
+      dateLabel: now.toLocaleDateString("fr-FR"),
+      timeLabel: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    });
+    setReturnSale(null);
+  };
+
+  const confirmUndoReturn = () => {
+    const { sale, ret } = undoRet;
+    setMovements(movements.map((m) => m.id === sale.id ? { ...m, returns: saleReturns(m).filter((r) => r.id !== ret.id) } : m));
+    if (ret.restock) setProducts(products.map((p) => p.id === sale.productId ? { ...p, stock: Math.max(0, p.stock - ret.qty) } : p));
+    setUndoRet(null);
   };
 
   return (
@@ -1812,7 +2122,7 @@ function Movements({ products, setProducts, movements, setMovements, title }) {
         <h2 className="text-2xl font-semibold" style={{ color: TEXT }}>{title}</h2>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <button onClick={() => setSubTab("vente")}
           className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
           style={{ background: subTab === "vente" ? NAVY : CARD, color: subTab === "vente" ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>
@@ -1823,13 +2133,35 @@ function Movements({ products, setProducts, movements, setMovements, title }) {
           style={{ background: subTab === "entree" ? NAVY : CARD, color: subTab === "entree" ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>
           <ArrowDownCircle size={16} /> Entrées (réassort)
         </button>
+        <button onClick={() => setSubTab("retour")}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
+          style={{ background: subTab === "retour" ? NAVY : CARD, color: subTab === "retour" ? "#fff" : TEXT, border: `1px solid ${LINE}` }}>
+          <RotateCcw size={16} /> Retours
+        </button>
       </div>
 
-      {subTab === "vente" ? (
-        <SalesPanel products={products} setProducts={setProducts} movements={movements} setMovements={setMovements} onRemove={setPendingRemove} />
-      ) : (
+      {subTab === "vente" && (
+        <SalesPanel products={products} setProducts={setProducts} movements={movements} setMovements={setMovements} onRemove={setPendingRemove} onReturn={setReturnSale} />
+      )}
+      {subTab === "entree" && (
         <EntriesPanel products={products} setProducts={setProducts} movements={movements} setMovements={setMovements} onRemove={setPendingRemove} />
+      )}
+      {subTab === "retour" && <ReturnsPanel movements={movements} onUndo={(sale, ret) => setUndoRet({ sale, ret })} />}
 
+      {returnSale && <ReturnModal sale={returnSale} onClose={() => setReturnSale(null)} onConfirm={confirmReturn} />}
+      {undoRet && (
+        <ConfirmModal
+          title="Annuler ce retour ?"
+          message={`Le retour de ${undoRet.ret.qty} × "${undoRet.sale.productName}" (${fmt(undoRet.ret.refund)}) sera supprimé${undoRet.ret.restock ? " et ces articles seront retirés du stock" : ""}. La vente retrouvera sa valeur d'origine.`}
+          confirmLabel="Annuler le retour"
+          onCancel={() => setUndoRet(null)}
+          onConfirm={confirmUndoReturn}
+        />
+      )}
+      {receipt && (
+        <ReceiptModal boutiqueName={boutiqueName} items={receipt.items} total={receipt.total}
+          dateLabel={receipt.dateLabel} timeLabel={receipt.timeLabel} title="Bon de retour"
+          totalLabel="Montant du retour" footer="Retour enregistré" extra={receipt.extra} onClose={() => setReceipt(null)} />
       )}
 
       {pendingRemove && (
@@ -1850,16 +2182,19 @@ function Movements({ products, setProducts, movements, setMovements, title }) {
 }
 
 // ---------- Environnement des ventes ----------
-function SalesPanel({ products, setProducts, movements, setMovements, onRemove }) {
+function SalesPanel({ products, setProducts, movements, setMovements, onRemove, onReturn }) {
   const [showForm, setShowForm] = useState(false);
   const [productId, setProductId] = useState("");
   const [qty, setQty] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [error, setError] = useState("");
   const [credit, setCredit] = useState(EMPTY_CREDIT);
+  const [discount, setDiscount] = useState(EMPTY_DISCOUNT);
 
   const product = products.find((p) => p.id === productId);
   const ventes = movements.filter((mv) => mv.type === "vente");
+  const subtotalS = (+qty || 0) * (+unitPrice || 0);
+  const netS = subtotalS - discountAmount(discount, subtotalS);
 
   const onSelectProduct = (id) => {
     setProductId(id);
@@ -1872,17 +2207,23 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
     if (!product || !qty || +qty <= 0) return setError("Choisis un produit et une quantité valide.");
     if (+qty > product.stock) return setError(`Stock insuffisant (disponible : ${product.stock}).`);
     const q = +qty;
-    const cErr = creditError(credit, q * +unitPrice);
+    const subtotal = q * +unitPrice;
+    const dErr = discountError(discount, subtotal);
+    if (dErr) return setError(dErr);
+    const disc = discountAmount(discount, subtotal);
+    const net = subtotal - disc;
+    const cErr = creditError(credit, net);
     if (cErr) return setError(cErr);
     const mv = {
       id: uid(), type: "vente", productId, productName: product.name, qty: q, date: todayStr(),
       unitVente: +unitPrice, unitAchat: product.achat,
-      totalVente: q * +unitPrice, totalAchat: q * product.achat,
-      ...(credit.on ? { credit: makeCredit(credit, Math.min(+credit.deposit || 0, q * +unitPrice)) } : {}),
+      totalVente: net, totalAchat: q * product.achat,
+      ...(disc > 0 ? { discount: disc } : {}),
+      ...(credit.on ? { credit: makeCredit(credit, Math.min(+credit.deposit || 0, net)) } : {}),
     };
     setMovements([mv, ...movements]);
     setProducts(products.map((p) => p.id === productId ? { ...p, stock: p.stock - q } : p));
-    setProductId(""); setQty(""); setUnitPrice(""); setCredit(EMPTY_CREDIT); setShowForm(false);
+    setProductId(""); setQty(""); setUnitPrice(""); setCredit(EMPTY_CREDIT); setDiscount(EMPTY_DISCOUNT); setShowForm(false);
   };
 
   return (
@@ -1916,7 +2257,8 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
           {product && qty && (
             <p className="text-xs mt-3" style={{ color: MUTED }}>Total de la vente : <span style={{ fontFamily: "ui-monospace, monospace", color: TEXT }}>{fmt((+qty || 0) * (+unitPrice || 0))}</span></p>
           )}
-          <div className="mt-3"><CreditFields value={credit} onChange={setCredit} total={(+qty || 0) * (+unitPrice || 0)} /></div>
+          <div className="mt-3"><DiscountFields value={discount} onChange={setDiscount} subtotal={subtotalS} cost={product ? (+qty || 0) * product.achat : 0} /></div>
+          <div className="mt-3"><CreditFields value={credit} onChange={setCredit} total={netS} /></div>
           {error && <p className="text-xs flex items-center gap-1 mt-2" style={{ color: RED }}><AlertCircle size={14} />{error}</p>}
           <div className="flex gap-2 mt-3">
             <button onClick={submit} style={{ background: ORANGE, color: "#fff" }} className="rounded-lg px-4 py-1.5 text-sm font-medium">Enregistrer la vente</button>
@@ -1949,11 +2291,15 @@ function SalesPanel({ products, setProducts, movements, setMovements, onRemove }
                 <td className="p-3" style={{ fontFamily: "ui-monospace, monospace" }}>{fmt(mv.unitVente)}</td>
                 <td className="p-3" style={{ fontFamily: "ui-monospace, monospace", color: GREEN }}>
                   {fmt(mv.totalVente)}
+                  {mv.discount > 0 && <div className="text-xs" style={{ color: MUTED }}>remise − {fmt(mv.discount)}</div>}
+                  {returnedQty(mv) > 0 && <div className="text-xs" style={{ color: RED }}>Retourné : {returnedQty(mv)} (− {fmt(returnedValue(mv))})</div>}
                   {saleDue(mv) > 0 && (
                     <div className="text-xs" style={{ color: ORANGE }}>Crédit {mv.credit.customer} — reste {fmt(saleDue(mv))}</div>
                   )}
                 </td>
-                <td className="p-3 text-right">
+                <td className="p-3 text-right whitespace-nowrap">
+                  <button onClick={() => onReturn(mv)} disabled={mv.qty - returnedQty(mv) <= 1e-9}
+                    className="inline-flex p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-30" title="Enregistrer un retour"><RotateCcw size={14} style={{ color: ORANGE }} /></button>
                   <button onClick={() => onRemove(mv)} className="inline-flex p-1.5 rounded-md hover:bg-gray-100" title="Annuler"><Trash2 size={14} style={{ color: RED }} /></button>
                 </td>
               </tr>
