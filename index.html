@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101B2E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Boutique">
 <title>Gestion de boutique</title>
 <script>
   window.onerror = function (msg, url, line, col, err) {
@@ -20,12 +25,12 @@
     return false;
   };
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root { color-scheme: light; }
@@ -40,6 +45,26 @@
 </head>
 <body>
 <div id="root"><div id="boot">Chargement de l'application…</div></div>
+<div id="offline-badge" style="display:none;position:fixed;left:10px;bottom:10px;z-index:9999;pointer-events:none;background:#101B2E;color:#fff;font:600 11px/1 ui-sans-serif,system-ui,sans-serif;padding:7px 11px;border-radius:999px;opacity:.92;box-shadow:0 2px 8px rgba(0,0,0,.25)">Hors ligne</div>
+<script>
+(function () {
+  var badge = document.getElementById("offline-badge");
+  function refresh() { if (badge) badge.style.display = navigator.onLine ? "none" : "block"; }
+  window.addEventListener("online", refresh);
+  window.addEventListener("offline", refresh);
+  refresh();
+  // Garder l'appli en réserve pour l'ouvrir sans internet (uniquement sur un vrai site https)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+  // Demander au navigateur de ne pas effacer les données de la boutique
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(function () {});
+  }
+})();
+</script>
 <script type="text/babel" data-presets="react">
 
 const { useState, useEffect, useMemo, useCallback } = React;
